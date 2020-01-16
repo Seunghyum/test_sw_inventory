@@ -180,3 +180,116 @@ float: left;
   font-weight: bold;
   font-size:10px;
 }
+
+.autocomplete {
+  width: 100%;
+  position: relative;
+  display: inline-block;
+}
+
+input {
+  border: 1px solid transparent;
+  background-color: #f1f1f1;
+  padding: 10px;
+  font-size: 16px;
+}
+
+input[type=text] {
+  background-color: #f1f1f1;
+  width: 100%;
+}
+
+input[type=submit] {
+  background-color: DodgerBlue;
+  color: #fff;
+  cursor: pointer;
+}
+
+.autocomplete-items {
+  display: flex;
+  z-index: 97;
+  max-height: calc(100vh - 65px);
+  overflow: scroll;
+  /* margin-top: 10px; */
+}
+
+.autocomplete-item {
+  height:35px;
+  padding: 5px;
+}
+.autocomplete-item:first-child {
+  padding-top: 0px;
+}
+.name .autocomplete-item { 
+  cursor: pointer;
+}
+
+/*when hovering an item:*/
+.name .autocomplete-item:hover {
+  background-color: #e9e9e9; 
+}
+
+/*when navigating through the items using the arrow keys:*/
+.autocomplete-active {
+  background-color: DodgerBlue !important; 
+  color: #ffffff; 
+}
+
+.nav-search {
+  position: absolute;
+  width: 100vw;
+}
+.nav-search .autocomplete-item span {
+  font-size: 12px;
+}
+.nav-search .autocomplete-item span.title {
+  font-size: 13px;
+  font-weight: 600;
+}
+.search-input {
+  width: 100%;
+  margin-bottom: 0px !important;
+}
+
+.search-box-wrapper {
+  margin: auto;
+  padding: 10px 30px;
+  width: 700px;
+  background-color: rgba(255, 255, 255,0.8)
+}
+.nav-search .field {
+  border-right: 1px solid silver;
+  flex: 1 1 0;
+  width: 33%;
+}
+.nav-search .field:last-child {
+  border-right: none;
+}
+.field > *:first-child {
+  margin-top:10px;
+}
+
+.nav-search .field.descriptions {
+  font-size: 12px;
+}
+.nav-search .field.products {
+  font-size: 12px;
+}
+.hidden {
+  display: none;
+}
+#searchwrapper {
+  width: 90%;
+}
+
+.align-center {
+  margin: auto;
+  text-align: center;
+}
+
+.nav-search__header {
+  display: flex;
+}
+.nav-search__header > * {
+  width: 33%;
+}
