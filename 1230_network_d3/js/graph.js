@@ -263,6 +263,12 @@ $(document).ready(function () {
                 });
               }
               */
+
+        function resetGraph() {
+          linkElements.attr('stroke', function(d) {
+            return color(d.class)
+          })
+        }
         // select node is called on every click
         // we either update the data according to the selection
         // or reset the data if the same node is clicked twice
@@ -273,22 +279,13 @@ $(document).ready(function () {
             selectedId = undefined
             resetData()
             updateSimulation()
-
+            resetGraph()
             // console.log('linkElements : ',  linkElements)
             // linkElements.enter().append('line')
             // //          .attr('stroke-width',1.2)
             // .attr('stroke', function(d) {
             //   return color(d.class)
             // })
-            nodeElements.attr('fill', function (node) {
-              return getNodeColor(node, neighbors)
-            })
-            //      textElements.attr('fill', function (node) { return getTextColor(node, neighbors) })
-            linkElements.attr('stroke', function(d) {
-              return color(d.class)
-            })
-
-
           } else {
             console.log('2222222')
             selectedId = selectedNode.id
@@ -693,6 +690,7 @@ $(document).ready(function () {
         document.getElementById("attributepane-close").addEventListener("click", function () {
           resetData()
           updateSimulation()
+          resetGraph()
           $("#attributepane").hide();
           $("#attributepane-left").show();
         });
