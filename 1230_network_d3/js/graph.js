@@ -10,9 +10,6 @@ $(document).ready(function () {
         var nodes = [...baseNodes]
         var links = [...baseLinks]
 
-        // console.log(' nodes : ', nodes)
-        // console.log(' links : ', links)
-
         function getNeighbors(node) {
           return baseLinks.reduce(function (neighbors, link) {
               if (link.target.id === node.id) {
@@ -269,13 +266,14 @@ $(document).ready(function () {
             return color(d.class)
           })
         }
+        
         // select node is called on every click
         // we either update the data according to the selection
         // or reset the data if the same node is clicked twice
         function selectNode(selectedNode, e) {
           if(typeof(e) === 'object') e.preventDefault()
           if (selectedId === selectedNode.id) {
-            console.log('111111')
+            console.log('11111')
             selectedId = undefined
             resetData()
             updateSimulation()
@@ -287,7 +285,7 @@ $(document).ready(function () {
             //   return color(d.class)
             // })
           } else {
-            console.log('2222222')
+            console.log('22222')
             selectedId = selectedNode.id
             // updateData(selectedNode)
             updateSimulation()
@@ -348,9 +346,50 @@ $(document).ready(function () {
           } else {
             document.getElementById('name').innerHTML = selectedNode.label;
           };
-
         }
 
+
+        // select matiral and toggle all related materials
+        function selectMaterialGroupOfNode(m) {
+          const group = links.filter(l => l.prod === m)
+          let allNeighborsIds = []
+          let allNeighborsObj = []
+          group.forEach(g => {
+            const node = g.target
+            const neighbors = getNeighbors(node)
+            allNeighborsIds.push(neighbors)
+            allNeighborsObj.push(node)
+          })
+          allNeighborsIds = allNeighborsIds.flat()
+          linkElements.attr('stroke', function (link) {
+            return allNeighborsIds.includes(link.target.id) ? 'green' : '#E5E5E5'
+          })
+
+          nodeElements.attr('fill', function (node) {
+            return getNodeColor(node, allNeighborsIds)
+          })
+        }
+
+        // select matiral and toggle all related materials
+        function selectProcessGroupOfNode(p) {
+          const group = links.filter(l => l.class === p)
+          let allNeighborsIds = []
+          let allNeighborsObj = []
+          group.forEach(g => {
+            const node = g.target
+            const neighbors = getNeighbors(node)
+            allNeighborsIds.push(neighbors)
+            allNeighborsObj.push(node)
+          })
+          allNeighborsIds = allNeighborsIds.flat()
+          linkElements.attr('stroke', function (link) {
+            return allNeighborsIds.includes(link.target.id) ? 'green' : '#E5E5E5'
+          })
+
+          nodeElements.attr('fill', function (node) {
+            return getNodeColor(node, allNeighborsIds)
+          })
+        }
 
         // this helper simple adds all nodes and links
         // that are missing, to recreate the initial state
@@ -397,7 +436,7 @@ $(document).ready(function () {
 
         function updateGraph() {
           ///////////////////
-          console.log('linkElements : ', linkElements)
+
           // links
           linkElements = linkGroup.selectAll('line')
             .data(links, function (link) {
@@ -405,17 +444,16 @@ $(document).ready(function () {
             })
 
           linkElements.exit().remove()
-
+          
           var linkEnter = linkElements
             .enter().append('line')
-            //          .attr('stroke-width',1.2)
             .attr('stroke', function(d) {
               return color(d.class)
             })
             .attr("stroke-opacity", 0.6)
             //'rgba(0, 50.2, 99.61, 0.3)'
             .style("stroke-width", function (d) {
-              return Math.sqrt(d.weight) * 1.5;
+              return Math.sqrt(d.weight) * 2;
             });
           linkElements = linkEnter.merge(linkElements)
 
@@ -463,13 +501,14 @@ $(document).ready(function () {
             .text(function (d) {
               return d.label
             })
-            //      .attr('font-size', 3)
+                //  .attr('font-size', 3)
             .attr("font-size", function (d) {
-              return Math.sqrt(d.degree) * 7;
+              const data = links.find(l => {
+                return d.id == l.source || d.id == l.target
+              })
+              return data ? Math.sqrt(data.weight) * 7 : 11
             })
             .attr("font-family", "Noto Sans KR")
-            //.attr('dx', 10)
-            //.attr('dy', 0.35)
             .attr("x", 0)
             .attr("dy", ".35em")
             .attr("text-anchor", "middle")
@@ -507,6 +546,7 @@ $(document).ready(function () {
           updateGraph()
 
           simulation.nodes(nodes).on('tick', () => {
+
             nodeElements
               .attr('transform', function (d) {
                 return 'translate(' + d.x + ',' + d.y + ')';
@@ -533,7 +573,6 @@ $(document).ready(function () {
               .attr('y', function (node) {
                 return node.y
               })
-
           })
 
           simulation.force('link').links(links)
@@ -548,18 +587,20 @@ $(document).ready(function () {
         function autocomplete(inp, {
           name,
           nodes,
+          processClassName,
+          materialClassName
         }) {
           /*the autocomplete function takes two arguments,
           the text field element and an array of possible autocompleted values:*/
           var currentFocus;
           const nameField = document.querySelector("#autocomplete-list .name.field");
-          const productsField = document.querySelector("#autocomplete-list .products.field");
-          const descriptionsField = document.querySelector("#autocomplete-list .descriptions.field");
+          const processField = document.querySelector("#autocomplete-list .process.field");
+          const materialField = document.querySelector("#autocomplete-list .material.field");
           /*execute a function when someone writes in the text field:*/
           inp.addEventListener("input", function (e) {
             var val = this.value;
             /*close any already open lists of autocompleted values*/
-            closeAllLists(nameField, productsField, descriptionsField);
+            closeAllLists();
             if (!val) return false;
             currentFocus = -1;
             // /*create a DIV element that will contain the items (values):*/
@@ -575,19 +616,42 @@ $(document).ready(function () {
             // /*append the DIV element as a child of the autocomplete container:*/
             // this.parentNode.appendChild(a);
             /*for each item in the array...*/
+            materialClassName.forEach(m => {
+              let materialFieldItem = document.createElement("DIV")
+              materialFieldItem.setAttribute("class", "autocomplete-item material-field-item")
+              materialFieldItem.addEventListener('click',(e) => {
+                selectMaterialGroupOfNode(m)
+                // selectNode(nodes[i],e)
+              })
+              materialFieldItem.innerHTML = "<span>" + m + "</span>"
+              materialField.append(materialFieldItem)
+            })
+
+            processClassName.forEach(p => {
+              let processFieldItem = document.createElement("DIV")
+              processFieldItem.setAttribute("class", "autocomplete-item")
+              processFieldItem.addEventListener('click',(e) => {
+                // const item = nodes.find(n => n.process === p)
+                // console.log('item : ', item)
+                // if(item) selectNode(item,e)
+                selectProcessGroupOfNode(p)
+              })
+              processFieldItem.innerHTML = "<span>" + p + "</span>"
+              processField.append(processFieldItem)
+            })
             for (let i = 0; i < name.length; i++) {
               /*check if the item starts with the same letters as the text field value:*/
               // if (arr[i].substr(0, val.length).toUpperCase() == val.toUpperCase()) {
               if (name[i].includes(val)) {
                 /*create a DIV element for each matching element:*/
                 const nameFieldElement = document.createElement("DIV");
-                const descriptionFieldElement = document.createElement("DIV");
-                const productFieldElement = document.createElement("DIV");
+                // const descriptionFieldElement = document.createElement("DIV");
+                // const productFieldElement = document.createElement("DIV");
                 // nameFieldElement.addEventListener("click", console.log('click====='));
                 nameFieldElement.addEventListener("click", function (e) {return selectNode(nodes[i],e)});
                 nameFieldElement.setAttribute("class", "autocomplete-item");
-                descriptionFieldElement.setAttribute("class", "autocomplete-item");
-                productFieldElement.setAttribute("class", "autocomplete-item");
+                // descriptionFieldElement.setAttribute("class", "autocomplete-item");
+                // productFieldElement.setAttribute("class", "autocomplete-item");
                 /*make the matching letters bold:*/
                 // nameFieldElement.innerHTML = "<strong>" + arr[i].substr(0, val.length) + "</strong>";
                 // nameFieldElement.innerHTML += arr[i].substr(val.length);
@@ -601,14 +665,14 @@ $(document).ready(function () {
                   inp.value = this.getElementsByTagName("input")[0].value;
                   /*close the list of autocompleted values,
                   (or any other open lists of autocompleted values:*/
-                  closeAllLists(nameField, productsField, descriptionsField);
+                  closeAllLists(nameField, processField, descriptionsField);
                 });
 
-                descriptionFieldElement.innerHTML = "<span>" + nodes[i].descriptions + "</span>"
-                productFieldElement.innerHTML = "<span>" + nodes[i].products + "</span>"
+                // descriptionFieldElement.innerHTML = "<span>" + nodes[i].descriptions + "</span>"
+                // productFieldElement.innerHTML = "<span>" + nodes[i].products + "</span>"
                 nameField.appendChild(nameFieldElement);
-                descriptionsField.append(descriptionFieldElement)
-                productsField.append(productFieldElement)
+                // descriptionsField.append(descriptionFieldElement)
+                // productsField.append(productFieldElement)
               }
             }
           });
@@ -667,14 +731,13 @@ $(document).ready(function () {
           function closeAllLists(elmnt) {
             /*close all autocomplete lists in the document,
             except the one passed as an argument:*/
-            // var x = document.getElementsByClassName("autocomplete-items");
             nameField.innerHTML = ''
-            productsField.innerHTML = ''
-            descriptionsField.innerHTML = ''
+            processField.innerHTML = ''
+            materialField.innerHTML = ''
           }
           // /*execute a function when someone clicks in the document:*/
           document.addEventListener("click", function () {
-            closeAllLists(nameField, productsField, descriptionsField);
+            closeAllLists();
           });
         }
 
@@ -695,25 +758,117 @@ $(document).ready(function () {
           $("#attributepane-left").show();
         });
 
+        document.getElementById("reset-map").addEventListener("click", function () {
+          resetData()
+          updateSimulation()
+          resetGraph()
+        });
+
         // // 검색어 입력시 값 추적
         // document.getElementById("searchwrapper").addEventListener ("click", function(e) {
         //   autocomplete()
         //   console.log(e.target.value)
         // });
         const autocompleteListName = nodes.map(n => n.name)
-        const autocompleteListAddress = nodes.map(n => n.address)
-        const autocompleteListDescriptions = nodes.map(n => n.descriptions)
-        const autocompleteListProducts = nodes.map(n => n.products)
+        // const autocompleteListAddress = nodes.map(n => n.address)
+        // const autocompleteListDescriptions = nodes.map(n => n.descriptions)
+        // const autocompleteListProducts = nodes.map(n => n.products)
+        // console.log('nodes : ', nodes)
+        // const autocompleteListDescriptions = links.map(l => l.class)
+        // const autocompleteListProducts = links.map(l => l.products)
+        materialClassName
         autocomplete(
           document.getElementById("searchwrapper"), {
             name: autocompleteListName,
             nodes,
-            address: autocompleteListAddress,
-            descriptions: autocompleteListDescriptions,
-            products: autocompleteListProducts
+            processClassName,
+            materialClassName
+            // address: autocompleteListAddress,
+            // descriptions: autocompleteListDescriptions,
+            // products: autocompleteListProducts
           }
         );
 
     }
   });
 })
+
+
+const materialClassName = ["가스",
+"가전제품(전기전자제품)",
+"간판",
+"고무",
+"공구",
+"과학용품",
+"광고",
+"귀금속",
+"금속",
+"기어",
+"기획",
+"납",
+"단자",
+"망",
+"명판",
+"모터",
+"목제품",
+"미터(메타)",
+"바퀴",
+"박스",
+"밸브",
+"버스바(부스바)",
+"베어링",
+"벨트",
+"벽지및장판",
+"볼트,너트",
+"봉",
+"부동산중개",
+"부품",
+"분전반및배전반",
+"비닐",
+"센서",
+"스위치",
+"스테인리스",
+"스폰지",
+"식기",
+"아크릴",
+"알루미늄",
+"어댑터(아담터)",
+"열쇠(키)",
+"우레탄",
+"원석,돌,스톤",
+"위생용도자기",
+"유리",
+"유리및창호",
+"의료",
+"인테리어상담",
+"인테리어제품",
+"인테리어철물",
+"자석",
+"전구",
+"전선",
+"조명자재",
+"조명제품",
+"철",
+"커넥터",
+"컨버터및인버터",
+"컴프레셔(콤프레샤)",
+"케이스",
+"튜브",
+"파이프",
+"팬",
+"패킹(바킹,박킹)",
+"펌프",
+"표지판",
+"풀리",
+"퓨즈(휴즈)",
+"플라스틱",
+"필름",
+"합금",
+"합성섬유",
+"핸들",
+"현수막",
+"호스",
+"회로",
+"NA"]
+
+const processClassName = ["기계제작1","기계제작2","부품제작","각인","자수","용접","시공","후처리1","후처리2","인쇄","회로설계","계측계 교정","접지","기계제작3","NA"]

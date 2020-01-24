@@ -231,49 +231,56 @@
     <div id="information">
     </div>
   </div> -->
-
-  <form class="nav-search" autocomplete="off" class="cf" style="margin-top: 60px;">
-    <div class="search-box-wrapper">
-      <div class="autocomplete">
-        <div class="nav-search__header">
-          <div class='align-center'>
-            <input type="text" id="searchwrapper" name="search" placeholder="취급 상품 혹은 상호명을 검색하세요." class="formcongrol  search-input"/>
+  <div class="network-map">
+    <a class="" id="reset-map" href="#"> 
+      <button class="nm-btn">
+        <span>포커싱 초기화</span>
+      </button>
+    </a>
+    <form class="nav-search" autocomplete="off" class="cf" style="margin-top: 20px;">
+      <div class="search-box-wrapper">
+        <div class="autocomplete">
+          <div class="nav-search__header">
+            <div class='align-center'>
+              <input type="text" id="searchwrapper" name="search" placeholder="취급 상품 혹은 상호명을 검색하세요." class="formcongrol  search-input"/>
+            </div>
+            <div class='align-center'>취급 공정</div>
+            <div class='align-center'>취급 품목</div class='align-center'>
           </div>
-          <div class='align-center'>취급 공정</div>
-          <div class='align-center'>취급 품목</div class='align-center'>
+          <div id="autocomplete-list" class="autocomplete-items">
+            <div class="field name"></div>
+            <div class="field process"></div>
+            <div class="field material"></div>
+          </div>
+          <!-- <div class="state"></div>
+          <div class="results"></div> -->
         </div>
-        <div id="autocomplete-list" class="autocomplete-items">
-          <div class="field name"></div>
-          <div class="field descriptions"></div>
-          <div class="field products"></div>
-        </div>
-        <!-- <div class="state"></div>
-        <div class="results"></div> -->
+      </div>
+    </form>
+
+    <svg style="margin-top: 20px;">
+      <filter x="0" y="0" width="1" height="1" id="addbackground">
+        <feFlood flood-color="rgba(255,255,255,0.75)"/>
+        <feComposite in="SourceGraphic"/>
+      </filter>
+    </svg>
+
+    <div id="attributepane">
+      <div class="nodeattributes">
+        <div id="name"></div>
+        <div id="data"></div>
+        <div id="p">Connections</div>
+        <a id= "link"></a>
+      </div>
+      <!-- <div title="Close" class="left-close returntext"> -->
+      <a class="" id="attributepane-close" href="#"> 
+        <button class="nm-btn">
+          <i class="icon-remove"></i> <span>전체 화면으로 돌아가기</span>
+        </button>
+      </a>
+      <!-- </div> -->
       </div>
     </div>
-  </form>
-
-  <svg width="960" height="600" style="margin-top: 60px;">
-    <filter x="0" y="0" width="1" height="1" id="addbackground">
-       <feFlood flood-color="rgba(255,255,255,0.75)"/>
-       <feComposite in="SourceGraphic"/>
-    </filter>
-  </svg>
-
-  <div id="attributepane">
-    <div class="text">
-    <div class="headertext">
-  </div>
-    <div class="nodeattributes">
-      <div id="name"></div>
-  	  <div id="data"></div>
-      <div id="p">Connections</div>
-      <a id= "link"></a>
-    </div>
-    <div title="Close" class="left-close returntext">
-      <a class="btn c cf" id="attributepane-close" href="#"> <i class="icon-remove"></i> 전체 화면으로 돌아가기</a>
-    </div>
-  	</div>
   </div>
   <script src="https://d3js.org/d3.v4.min.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
