@@ -57,26 +57,6 @@
       font-size: 0.7rem;
   }
 
-  #attributepane {
-    display: block;
-    display: none;
-    position:absolute;
-    height:auto;
-    bottom:50px;
-    top:50px;
-    right:50px;
-    width: 250px;
-    background-color: #fff;
-    margin: 0;
-    word-wrap: break-word;
-    -webkit-transition: all 0.4s ease 0s;
-    -o-transition: all 0.4s ease 0s;
-    transition: all 0.4s ease 0s;
-    background-color:rgba(255, 255, 255,0.8);
-    border: 1px solid black;
-    padding: 0px 18px 0px 18px;
-    z-index: 1;
-  }
 
   #attributepane-left {
     display: block;
@@ -158,14 +138,6 @@
   /*	border-bottom:1px solid #999; */
   }
 
-  #attributepane #name {
-    font-family: Noto Sans KR;
-    font-size: 1.2rem;
-    padding-top: 7%;
-    padding-bottom: 14%;
-    font-weight: 500;
-  }
-
   #attributepane #data {
     color:#808080;
     font-family: 'Noto Sans KR', sans-serif;
@@ -216,21 +188,6 @@
 </head>
 
 <body>
-   <!-- <div id="attributepane-left">
-    <div class="col">
-       <div id="title"></div>
-      <div class="b1">
-      </div>
-     <div class ="btn-container">
-        <a class="btn c cf" id="close" href="#"> 전체 화면으로 돌아가기</a>
-        <br><br><button type = "button" class="btn btn-light filter-btn" value="1" id="firstbike" onClick="alert('button is clicked')">FIRST BIKE</button>
-        <br><br><button class = "btn btn-light " onClick="projbtn(this.id, this.innerHTML)" id="usblight">황동USB조명</button>
-        <br><br><button class = "btn btn-light" onClick="projbtn(this.id, this.innerHTML)" id="luckydraw" disabled>행운번호 추첨기</button>
-      </div>
-    </div>
-    <div id="information">
-    </div>
-  </div> -->
   <div class="network-map">
     <a class="" id="reset-map" href="#"> 
       <button class="nm-btn">
@@ -247,7 +204,7 @@
             <div class='align-center'>취급 공정</div>
             <div class='align-center'>취급 품목</div class='align-center'>
           </div>
-          <div id="autocomplete-list" class="autocomplete-items">
+          <div id="autocomplete-list" class="autocomplete-items hidden">
             <div class="field name"></div>
             <div class="field process"></div>
             <div class="field material"></div>
@@ -267,18 +224,28 @@
 
     <div id="attributepane">
       <div class="nodeattributes">
+        <div id="search-status"></div>
+        <a class="" id="attributepane-close" href="#"> 
+          <button class="nm-btn">
+            <i class="icon-remove"></i> <span>검색 취소</span>
+          </button>
+        </a>
         <div id="name"></div>
         <div id="data"></div>
         <div id="p">Connections</div>
         <a id= "link"></a>
-      </div>
-      <!-- <div title="Close" class="left-close returntext"> -->
-      <a class="" id="attributepane-close" href="#"> 
-        <button class="nm-btn">
-          <i class="icon-remove"></i> <span>전체 화면으로 돌아가기</span>
-        </button>
-      </a>
-      <!-- </div> -->
+        <div class="attributepane-list-wrapper">
+          <div class="title">Store</div>
+          <div id="store" class="attributepane-list"></div>
+        </div>
+        <div class="attributepane-list-wrapper">
+          <div class="title">취급 품목</div>
+          <div id="material" class="attributepane-list"></div>
+        </div>
+        <div class="attributepane-list-wrapper">
+          <div class="title">취급 공정</div>
+          <div id="process" class="attributepane-list"></div>
+        </div>
       </div>
     </div>
   </div>

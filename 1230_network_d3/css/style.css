@@ -811,7 +811,7 @@ path {
 	transition: all 0.4s ease 0s;
 	background-color:rgba(255, 255, 255,0.8);
 	border: 1px solid black;
-	padding: 0px 18px 0px 18px;
+	padding: 10px 18px;
 	z-index: 1;
 }
 
@@ -881,8 +881,8 @@ float: left;
 #attributepane #name {
   font-family: Noto Sans KR;
   font-size: 1.2rem;
-  padding-top: 7%;
-  padding-bottom: 14%;
+  /* padding-top: 7%; */
+  /* padding-bottom: 14%; */
   font-weight: 500;
 }
 
@@ -962,8 +962,12 @@ input[type=submit] {
   display: flex;
   z-index: 97;
   max-height: calc(100vh - 65px);
-  overflow: scroll;
+  height: calc(100vh - 70px);
+  /* overflow: scroll; */
   /* margin-top: 10px; */
+}
+.autocomplete-items .field{
+  overflow-y: scroll;
 }
 
 .autocomplete-item {
@@ -1053,6 +1057,10 @@ input[type=submit] {
 .network-map .nodeattributes ul{
   margin-left: 0px;
 }
+
+#attributepane-close {
+  float: right;
+}
 .network-map .nm-btn{
   color: #fff;
   background-color: #6c757d;
@@ -1091,14 +1099,39 @@ input[type=submit] {
   padding-top: 20px;
 }
 
-.autocomplete-item:hover {
+.autocomplete-item:hover, .attributepane-item:hover {
   cursor: pointer;
   background-color:rgba(0, 0, 0, 0.1) 
 }
 
+
+
 #reset-map {
   position: absolute;
     right: 10px;
+    bottom: 10px;
     margin-top: 30px;
     z-index: 999;
+}
+#attributepane .attributepane-list  {
+  height: 150px;
+  overflow-y: scroll;
+}
+#attributepane .attributepane-list-wrapper {
+  margin-bottom: 10px;
+}
+#attributepane .attributepane-list-wrapper .title{ 
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+#attributepane .attributepane-item  {
+  padding:3px;
+}
+
+#attributepane #search-status .title {
+  margin-top: 5px;
+  margin-bottom: 10px;
+  font-size: 16px;
+  float: left;
 }

@@ -5,10 +5,10 @@ Sewoon Inventory source code
 - 1230_network_d3: source code used to experiment with D3 to replace the Sigma js code - work in progress.
 - sewoon.zip: 2019/12/30 version full website code -- uploaded as a zip due to large number of files.. 
 
-
 ## run hot reload
 1. install npm package manager
 2. 
 ```shell
 $ cd 1230_network_d3 && npx browser-sync start --server --files "*/**"
 ```
+
