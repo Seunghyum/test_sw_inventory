@@ -1095,3 +1095,10 @@ input[type=submit] {
   cursor: pointer;
   background-color:rgba(0, 0, 0, 0.1) 
 }
+
+#reset-map {
+  position: absolute;
+    right: 10px;
+    margin-top: 30px;
+    z-index: 999;
+}

@@ -583,13 +583,13 @@ $(document).ready(function () {
         // to trigger the initial render
         updateSimulation()
 
-        //// autocomplete 함수
         function autocomplete(inp, {
-          name,
+          keywords,
           nodes,
           processClassName,
           materialClassName
         }) {
+          console.log('keywords : ', keywords)
           /*the autocomplete function takes two arguments,
           the text field element and an array of possible autocompleted values:*/
           var currentFocus;
@@ -603,62 +603,39 @@ $(document).ready(function () {
             closeAllLists();
             if (!val) return false;
             currentFocus = -1;
-            // /*create a DIV element that will contain the items (values):*/
-            // a = document.createElement("DIV");
-            // a.setAttribute("id", this.id + "autocomplete-list");
-            // a.setAttribute("class", "autocomplete-items");
-
-            // a = document.getElementById("autocomplete-list");
-            // const nameField = document.querySelector("#autocomplete-list .name.field");
-            // const descriptionsField = document.querySelector("#autocomplete-list .descriptions.field");
-            // const productsField = document.querySelector("#autocomplete-list .products.field");
-
-            // /*append the DIV element as a child of the autocomplete container:*/
-            // this.parentNode.appendChild(a);
-            /*for each item in the array...*/
+            
+            // append materialClassName to list
             materialClassName.forEach(m => {
               let materialFieldItem = document.createElement("DIV")
               materialFieldItem.setAttribute("class", "autocomplete-item material-field-item")
-              materialFieldItem.addEventListener('click',(e) => {
+              materialFieldItem.addEventListener('click',() => {
                 selectMaterialGroupOfNode(m)
-                // selectNode(nodes[i],e)
               })
               materialFieldItem.innerHTML = "<span>" + m + "</span>"
               materialField.append(materialFieldItem)
             })
 
+            // append processClassName to list
             processClassName.forEach(p => {
               let processFieldItem = document.createElement("DIV")
               processFieldItem.setAttribute("class", "autocomplete-item")
-              processFieldItem.addEventListener('click',(e) => {
-                // const item = nodes.find(n => n.process === p)
-                // console.log('item : ', item)
-                // if(item) selectNode(item,e)
+              processFieldItem.addEventListener('click',() => {
                 selectProcessGroupOfNode(p)
               })
               processFieldItem.innerHTML = "<span>" + p + "</span>"
               processField.append(processFieldItem)
             })
-            for (let i = 0; i < name.length; i++) {
+            for (let i = 0; i < keywords.length; i++) {
               /*check if the item starts with the same letters as the text field value:*/
-              // if (arr[i].substr(0, val.length).toUpperCase() == val.toUpperCase()) {
-              if (name[i].includes(val)) {
+              if (Object.values(keywords[i]).filter(k => k.includes(val)).length > 0) {
                 /*create a DIV element for each matching element:*/
                 const nameFieldElement = document.createElement("DIV");
-                // const descriptionFieldElement = document.createElement("DIV");
-                // const productFieldElement = document.createElement("DIV");
-                // nameFieldElement.addEventListener("click", console.log('click====='));
                 nameFieldElement.addEventListener("click", function (e) {return selectNode(nodes[i],e)});
                 nameFieldElement.setAttribute("class", "autocomplete-item");
-                // descriptionFieldElement.setAttribute("class", "autocomplete-item");
-                // productFieldElement.setAttribute("class", "autocomplete-item");
-                /*make the matching letters bold:*/
-                // nameFieldElement.innerHTML = "<strong>" + arr[i].substr(0, val.length) + "</strong>";
-                // nameFieldElement.innerHTML += arr[i].substr(val.length);
-                nameFieldElement.innerHTML = "<span class='title'>" + name[i] + "</span><br>" +
+                nameFieldElement.innerHTML = "<span class='title'>" + keywords[i].name + "</span><br>" +
                   "<span>" + nodes[i].address + "</span>"
                 /*insert a input field that will hold the current array item's value:*/
-                nameFieldElement.innerHTML += "<input type='hidden' value='" + name[i] + "'>";
+                nameFieldElement.innerHTML += "<input type='hidden' value='" + keywords[i].name + "'>";
                 /*execute a function when someone clicks on the item value (DIV element):*/
                 nameFieldElement.addEventListener("click", function (e) {
                   /*insert the value for the autocomplete text field:*/
@@ -678,14 +655,6 @@ $(document).ready(function () {
           });
           /*execute a function presses a key on the keyboard:*/
           inp.addEventListener("keydown", function (e) {
-            // // enter key
-            // if(e.keyCode == 13) {
-            //   if(!arr[0]) return null
-            //   alert(arr[currentFocus])
-            //   // return window.currentFocus
-            // }
-
-            // var x = document.getElementById(this.id + "autocomplete-list");
             var x = document.querySelector("#autocomplete-list .name.field");
             if (x) x = x.getElementsByClassName("autocomplete-item");
             if (e.keyCode === 40) {
@@ -750,7 +719,8 @@ $(document).ready(function () {
         //   $("#attributepane-left").show();
         // }
 
-        document.getElementById("attributepane-close").addEventListener("click", function () {
+        document.getElementById("attributepane-close").addEventListener("click", function (e) {
+          e.preventDefault();
           resetData()
           updateSimulation()
           resetGraph()
@@ -758,34 +728,46 @@ $(document).ready(function () {
           $("#attributepane-left").show();
         });
 
-        document.getElementById("reset-map").addEventListener("click", function () {
+        document.getElementById("reset-map").addEventListener("click", function (e) {
+          e.preventDefault();
           resetData()
           updateSimulation()
           resetGraph()
         });
 
-        // // 검색어 입력시 값 추적
-        // document.getElementById("searchwrapper").addEventListener ("click", function(e) {
-        //   autocomplete()
-        //   console.log(e.target.value)
-        // });
-        const autocompleteListName = nodes.map(n => n.name)
-        // const autocompleteListAddress = nodes.map(n => n.address)
-        // const autocompleteListDescriptions = nodes.map(n => n.descriptions)
-        // const autocompleteListProducts = nodes.map(n => n.products)
-        // console.log('nodes : ', nodes)
-        // const autocompleteListDescriptions = links.map(l => l.class)
-        // const autocompleteListProducts = links.map(l => l.products)
+        document.querySelector('.search-box-wrapper').addEventListener('click', function() {
+          const processField = document.querySelector("#autocomplete-list .process.field");
+          const materialField = document.querySelector("#autocomplete-list .material.field");
+          materialClassName.forEach(m => {
+            let materialFieldItem = document.createElement("DIV")
+            materialFieldItem.setAttribute("class", "autocomplete-item material-field-item")
+            materialFieldItem.addEventListener('click',() => {
+              selectMaterialGroupOfNode(m)
+            })
+            materialFieldItem.innerHTML = "<span>" + m + "</span>"
+            materialField.append(materialFieldItem)
+          })
+
+          processClassName.forEach(p => {
+            let processFieldItem = document.createElement("DIV")
+            processFieldItem.setAttribute("class", "autocomplete-item")
+            processFieldItem.addEventListener('click',() => {
+              selectProcessGroupOfNode(p)
+            })
+            processFieldItem.innerHTML = "<span>" + p + "</span>"
+            processField.append(processFieldItem)
+          })
+        })
+
+        const autocompleteListName = nodes.map(n => ({name: n.name, descriptions: n.descriptions, prod:n.prod}))
+
         materialClassName
         autocomplete(
           document.getElementById("searchwrapper"), {
-            name: autocompleteListName,
+            keywords: autocompleteListName,
             nodes,
             processClassName,
             materialClassName
-            // address: autocompleteListAddress,
-            // descriptions: autocompleteListDescriptions,
-            // products: autocompleteListProducts
           }
         );
 
@@ -793,8 +775,7 @@ $(document).ready(function () {
   });
 })
 
-
-const materialClassName = ["가스",
+var materialClassName = ["가스",
 "가전제품(전기전자제품)",
 "간판",
 "고무",
@@ -871,4 +852,4 @@ const materialClassName = ["가스",
 "회로",
 "NA"]
 
-const processClassName = ["기계제작1","기계제작2","부품제작","각인","자수","용접","시공","후처리1","후처리2","인쇄","회로설계","계측계 교정","접지","기계제작3","NA"]
+var processClassName = ["기계제작1","기계제작2","부품제작","각인","자수","용접","시공","후처리1","후처리2","인쇄","회로설계","계측계 교정","접지","기계제작3","NA"]

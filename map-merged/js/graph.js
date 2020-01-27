@@ -10,9 +10,6 @@ $(document).ready(function () {
         var nodes = [...baseNodes]
         var links = [...baseLinks]
 
-        console.log('b nodes : ', nodes)
-        console.log('b links : ', links)
-
         function getNeighbors(node) {
           return baseLinks.reduce(function (neighbors, link) {
               if (link.target.id === node.id) {
@@ -753,12 +750,20 @@ $(document).ready(function () {
         //   $("#attributepane-left").show();
         // }
 
-        document.getElementById("attributepane-close").addEventListener("click", function () {
+        document.getElementById("attributepane-close").addEventListener("click", function (e) {
+          e.preventDefault();
           resetData()
           updateSimulation()
           resetGraph()
           $("#attributepane").hide();
           $("#attributepane-left").show();
+        });
+
+        document.getElementById("reset-map").addEventListener("click", function (e) {
+          e.preventDefault();
+          resetData()
+          updateSimulation()
+          resetGraph()
         });
 
         // // 검색어 입력시 값 추적
