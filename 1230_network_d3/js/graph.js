@@ -24671,7 +24671,7 @@
           }
   
           function getLinkColor(node, link) {
-            return isNeighborLink(node, link) ? 'green' : '#E5E5E5'
+            return isNeighborLink(node, link) ? color(link.class) : '#E5E5E5'
           }
   
           function getTextColor(node, neighbors) {
@@ -24926,30 +24926,13 @@
               };
 
               const targetStore = storeDB.find(data => data.name === selectedNode.label)
-              const linkToStoreDetailPage = targetStore ? '<a class="nm-btn" target="_blank" href="' + defaultHref + targetStore.id + '">상품 상세정보 보기</a>' : ''
+              const linkToStoreDetailPage = targetStore ? '<a class="nm-btn view-detail" target="_blank" href="' + defaultHref + targetStore.id + '">상품 상세정보 보기</a>' : ''
               document.getElementById('data').appendChild(linkToStoreDetailPage)
             }
-  
-            // var neighbors = getNeighbors(selectedNode)
-  
-            // // we modify the styles to highlight selected nodes
-            // nodeElements.attr('fill', function (node) {
-            //   return getNodeColor(node, neighbors)
-            // })
-            // //      textElements.attr('fill', function (node) { return getTextColor(node, neighbors) })
-            // linkElements.attr('stroke', function (link) {
-            //   return getLinkColor(selectedNode, link)
-            // })
   
             ul = document.createElement('ul');
             document.getElementById('link').appendChild(ul);
 
-            // nodes.forEach(function (node) {
-            //   let li = document.createElement('li');
-            //   ul.appendChild(li);
-  
-            //   li.innerHTML += node.label;
-            // });
             let materialArray = []
             let processArray = []
             nodes.forEach(row => {
@@ -24974,12 +24957,6 @@
               resetData()
               updateSimulation()
               resetGraph()
-              // console.log('linkElements : ',  linkElements)
-              // linkElements.enter().append('line')
-              // //          .attr('stroke-width',1.2)
-              // .attr('stroke', function(d) {
-              //   return color(d.class)
-              // })
             } else {
               selectedId = selectedNode.id
               // updateData(selectedNode)
@@ -25004,7 +24981,7 @@
               const linkToStoreDetailPage = targetStore ? '<a class="nm-btn" target="_blank" href="' + defaultHref + targetStore.id + '">상품 상세정보 보기</a>' : ''
               
               document.getElementById('name').innerHTML = '<strong>업체명 </strong>' + selectedNode.label;
-              console.log("document.getElementById('name') : ", document.getElementById('name'))
+              // console.log("document.getElementById('name') : ", document.getElementById('name'))
               document.getElementById('data').innerHTML = 
                 '<strong>주소</strong> 서울시 ' + selectedNode.dist + ' ' + selectedNode.address +
                 ' <br> <strong>전화번호 </strong> 02-' + selectedNode.phone +
@@ -25280,11 +25257,11 @@
             // const materialField = document.querySelector("#autocomplete-list .material.field");
             /*execute a function when someone writes in the text field:*/
 
-            inp.addEventListener("change", function (e) {
-              var val = this.value;
-              /*close any already open lists of autocompleted values*/
-              onChangeSearchText(val)
-            })
+            // inp.addEventListener("change", function (e) {
+            //   var val = this.value;
+            //   /*close any already open lists of autocompleted values*/
+            //   onChangeSearchText(val)
+            // })
             inp.addEventListener("click", function (e) {
               document.getElementById('autocomplete-list').classList.remove("hidden");
             })
@@ -25315,7 +25292,7 @@
                     /*insert the value for the autocomplete text field:*/
                     document.getElementById('autocomplete-list').classList.add("hidden");
 
-                    inp.value = this.getElementsByTagName("input")[0].value;
+                    // inp.value = this.getElementsByTagName("input")[0].value;
                     
                     /*close the list of autocompleted values,
                     (or any other open lists of autocompleted values:*/
@@ -25332,93 +25309,140 @@
             });
 
 
-            // user press enter key on search box
-            inp.addEventListener("keyup", function(event) {
-              // Number 13 is the "Enter" key on the keyboard
-              // event.preventDefault();
-              if (event.keyCode !== 13) return false
-              closeAllLists();
-              $("#attributepane").show();
+            // // user press enter key on search box
+            // inp.addEventListener("keyup", function(event) {
+            //   // Number 13 is the "Enter" key on the keyboard
+            //   // event.preventDefault();
+            //   if (event.keyCode !== 13) return false
+            //   closeAllLists();
+            //   $("#attributepane").show();
               
-              document.getElementById('autocomplete-list').classList.remove("hidden");
-              var val = this.value;
-              /*close any already open lists of autocompleted values*/
+            //   document.getElementById('autocomplete-list').classList.remove("hidden");
+            //   var val = this.value;
+            //   /*close any already open lists of autocompleted values*/
 
-              let storeArray = []
-              for (let i = 0; i < keywords.length; i++) {
-                if ([keywords[i].name, keywords[i].descriptions, keywords[i].prod].filter(k => k.includes(val)).length > 0) {
-                  storeArray.push(keywords[i])
-                }
-              }
+            //   let storeArray = []
+            //   for (let i = 0; i < keywords.length; i++) {
+            //     if ([keywords[i].name, keywords[i].descriptions, keywords[i].prod].filter(k => k.includes(val)).length > 0) {
+            //       storeArray.push(keywords[i])
+            //     }
+            //   }
 
-              storeArray.forEach(s => {
-                let storeFieldItem = document.createElement("DIV")
-                storeFieldItem.setAttribute("class", "attributepane-item")
-                storeFieldItem.addEventListener('click',(e) => {
-                  selectNode(s,e)
-                })
-                storeFieldItem.innerHTML = "<span>" + s.name + "</span>"
+            //   storeArray.forEach(s => {
+            //     let storeFieldItem = document.createElement("DIV")
+            //     storeFieldItem.setAttribute("class", "attributepane-item")
+            //     storeFieldItem.addEventListener('click',(e) => {
+            //       selectNode(s,e)
+            //     })
+            //     storeFieldItem.innerHTML = "<span>" + s.name + "</span>"
                 
-                document.querySelector('#attributepane #store').append(storeFieldItem)
-              })
+            //     document.querySelector('#attributepane #store').append(storeFieldItem)
+            //   })
               
-              materialClassName.forEach(m => {
-                if(!m.includes(val)) return false
-                let materialFieldItem = document.createElement("DIV")
-                materialFieldItem.setAttribute("class", "attributepane-item")
-                materialFieldItem.addEventListener('click',() => {
-                  selectMaterialGroupOfNode(m, linkElements, nodeElements)
-                })
-                materialFieldItem.innerHTML = "<span>" + m + "</span>"
+            //   materialClassName.forEach(m => {
+            //     if(!m.includes(val)) return false
+            //     let materialFieldItem = document.createElement("DIV")
+            //     materialFieldItem.setAttribute("class", "attributepane-item")
+            //     materialFieldItem.addEventListener('click',() => {
+            //       selectMaterialGroupOfNode(m, linkElements, nodeElements)
+            //     })
+            //     materialFieldItem.innerHTML = "<span>" + m + "</span>"
                 
-                document.querySelector('#attributepane #material').append(materialFieldItem)
-              })
+            //     document.querySelector('#attributepane #material').append(materialFieldItem)
+            //   })
     
-              processClassName.forEach(p => {
-                if(!p.includes(val)) return false
-                let processFieldItem = document.createElement("DIV")
-                processFieldItem.setAttribute("class", "attributepane-item")
-                processFieldItem.addEventListener('click',() => {
-                  selectProcessGroupOfNode(p, linkElements, nodeElements)
-                })
-                processFieldItem.innerHTML = "<span>" + p + "</span>"
-                document.querySelector('#attributepane #process').append(processFieldItem)
-              })
-            });
+            //   processClassName.forEach(p => {
+            //     if(!p.includes(val)) return false
+            //     let processFieldItem = document.createElement("DIV")
+            //     processFieldItem.setAttribute("class", "attributepane-item")
+            //     processFieldItem.addEventListener('click',() => {
+            //       selectProcessGroupOfNode(p, linkElements, nodeElements)
+            //     })
+            //     processFieldItem.innerHTML = "<span>" + p + "</span>"
+            //     document.querySelector('#attributepane #process').append(processFieldItem)
+            //   })
+            // });
 
-            // user press enter key on search button 검색 버튼 클릭시 필터링
-            document.querySelector('#search-input-button').addEventListener("click", function(event) {
-
+            function searchInputText(val) {
               $("#attributepane").show();
               document.querySelector('#attributepane #store-wrapper').classList.remove('hidden')
               document.getElementById('autocomplete-list').classList.add("hidden");
-              
-              let allNeighborsIds = []
+
+              const attributepaneMaterial = document.querySelector('#attributepane #material')
+              const attributepaneProcess = document.querySelector('#attributepane #process')
+              const attributepaneStore = document.querySelector('#attributepane #store')
+              for (let i = 0; i < nodes.length; i++) {
+                if(nodes[i].label === 'NA') continue;
+                if ([nodes[i].name, nodes[i].descriptions, nodes[i].prod].filter(k => k.includes(val)).length > 0) {
+                  if(nodes[i].label === nodes[i].prod) { // 공정
+                    let processFieldItem = document.createElement("DIV")
+                    processFieldItem.setAttribute("class", "attributepane-item")
+                    processFieldItem.addEventListener('click',() => {
+                      selectProcessGroupOfNode(nodes[i].label, linkElements, nodeElements)
+                    })
+                    processFieldItem.innerHTML = "<span>" + nodes[i].label + "</span>"
+                    attributepaneProcess.append(processFieldItem)
+                  } else if(nodes[i].label === nodes[i].Keyword) { // 품목
+                    let materialFieldItem = document.createElement("DIV")
+                    materialFieldItem.setAttribute("class", "attributepane-item")
+                    materialFieldItem.addEventListener('click',() => {
+                      selectMaterialGroupOfNode(nodes[i].label, linkElements, nodeElements)
+                    })
+                    materialFieldItem.innerHTML = "<span>" + nodes[i].label + "</span>"
+                    attributepaneMaterial.append(materialFieldItem)
+                  } else { // 상점
+                    let storeFieldItem = document.createElement("DIV")
+                    storeFieldItem.setAttribute("class", "attributepane-item")
+                    storeFieldItem.addEventListener('click',(e) => {
+                      selectNode(nodes[i],e)
+                    })
+                    storeFieldItem.innerHTML = "<span>" + nodes[i].label + "</span>"
+                    attributepaneStore.append(storeFieldItem)
+                  }
+                }
+              }
+
+
+
+
+
 
               const processChekced = document.querySelectorAll('.field.process .autocomplete-item-check-input:checked')
+              const processField = document.querySelector('#attributepane #process')
+              processField.innerHTML = ''
               processChekced.forEach((input) => {
-                // const nodeGroup = nodes.filter(n => n.process.includes(input.value))
                 const nodeGroup = nodes.filter(n => n.label === input.value)
-                allNeighborsIds.push(nodeGroup.map(g => g.id))
+                nodeGroup.forEach(p => {
+                  let processFieldItem = document.createElement("DIV")
+                  processFieldItem.setAttribute("class","attributepane-item")
+                  processFieldItem.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    selectProcessGroupOfNode(p, linkElements, nodeElements)
+                  })
+                  processFieldItem.innerHTML = `<span>${p.name}</span>`
+                  processField.append(processFieldItem)
+                })
               })
 
               const materialChekced = document.querySelectorAll('.field.material .autocomplete-item-check-input:checked')
-              
+              const materialField = document.querySelector('#attributepane #material')
               materialChekced.forEach((input) => {
-                // const nodeGroup = nodes.filter(n => n.products.includes(input.value))
                 const nodeGroup = nodes.filter(n => n.label === input.value)
-                allNeighborsIds.push(nodeGroup.map(g => g.id))
+                materialFieldItem.setAttribute("class","attributepane-item")
+                materialFieldItem.addEventListener('click', (e) => {
+                  e.preventDefault();
+                  selectMaterialGroupOfNode(m, linkElements, nodeElements)
+                })
+                materialFieldItem.innerHTML = `<span>${m}</span>`
+                materialField.append(materialFieldItem)
               })
-              
-              allNeighborsIds = allNeighborsIds.flat()
-              linkElements.attr('stroke', function (link) {
-                return allNeighborsIds.some(id => id === link.target.id || id === link.source.id) ? color(link.class) : '#E5E5E5'
-                // return allNeighborsIds.includes(link.target.id) ? 'green' : '#E5E5E5'
-              })
-    
-              nodeElements.attr('fill', function (node) {
-                return getNodeColor(node, allNeighborsIds)
-              })
+            }
+
+            // user press enter key on search button 검색 버튼 클릭시 필터링
+            document.querySelector('#search-input-button').addEventListener("click", function(e) {
+              e.preventDefault()
+              const val = this.value
+              searchInputText(val)
             });
 
 
@@ -25446,6 +25470,8 @@
                   /*and simulate a click on the "active" item:*/
                   if (x) x[currentFocus].click();
                 }
+                const val = this.value
+                searchInputText(val)
               }
             });
   
@@ -25514,12 +25540,12 @@
             // $("#attributepane-left").show();
           });
   
-          document.getElementById("reset-map").addEventListener("click", function (e) {
-            e.preventDefault();
-            resetData()
-            updateSimulation()
-            resetGraph()
-          });
+          // document.getElementById("reset-map").addEventListener("click", function (e) {
+          //   e.preventDefault();
+          //   resetData()
+          //   updateSimulation()
+          //   resetGraph()
+          // });
   
           // document.querySelector('.search-box-wrapper').addEventListener('click', function() {
           //   const processField = document.querySelector("#autocomplete-list .process.field");
@@ -25555,10 +25581,43 @@
               materialClassName
             }
           );
+
+          // 필터링 버튼
+          document.getElementById('filtering').addEventListener('click', (e) => {
+            e.preventDefault()
+            
+            // $("#attributepane").show();
+            document.querySelector('#attributepane #store-wrapper').classList.remove('hidden')
+            document.getElementById('autocomplete-list').classList.add("hidden");
+            
+            let allNeighborsIds = []
+
+            const processChekced = document.querySelectorAll('.field.process .autocomplete-item-check-input:checked')
+            processChekced.forEach((input) => {
+              // const nodeGroup = nodes.filter(n => n.process.includes(input.value))
+              const nodeGroup = nodes.filter(n => n.label === input.value)
+              allNeighborsIds.push(nodeGroup.map(g => g.id))
+            })
+
+            const materialChekced = document.querySelectorAll('.field.material .autocomplete-item-check-input:checked')
+            
+            materialChekced.forEach((input) => {
+              // const nodeGroup = nodes.filter(n => n.products.includes(input.value))
+              const nodeGroup = nodes.filter(n => n.label === input.value)
+              allNeighborsIds.push(nodeGroup.map(g => g.id))
+            })
+            
+            allNeighborsIds = allNeighborsIds.flat()
+            linkElements.attr('stroke', function (link) {
+              return allNeighborsIds.some(id => id === link.target.id || id === link.source.id) ? color(link.class) : '#E5E5E5'
+              // return allNeighborsIds.includes(link.target.id) ? 'green' : '#E5E5E5'
+            })
   
-  
-  
-  
+            nodeElements.attr('fill', function (node) {
+              return getNodeColor(node, allNeighborsIds)
+            })
+          })
+
           // 선택 취소 - 취급 공정
           document.getElementById('process-field-cancel').addEventListener('click', (e) => {
             e.preventDefault()
@@ -25615,8 +25674,8 @@
   
           // select matiral and toggle all related materials
           function selectMaterialGroupOfNode(m, linkElements, nodeElements) {
-            // const group = nodes.filter(l => l.Keyword === m)
-            const group = nodes.filter(n => n.products.includes(input.value))
+            const group = nodes.filter(n => n.Keyword === m)
+            // const group = nodes.filter(n => n.products.includes(m))
             let allNeighborsIds = []
             let allNeighborsObj = []
             group.forEach(g => {
@@ -25628,7 +25687,7 @@
             allNeighborsIds = allNeighborsIds.flat()
 
             linkElements.attr('stroke', function (link) {
-              return allNeighborsIds.includes(link.target.id) ? 'green' : '#E5E5E5'
+              return allNeighborsIds.includes(link.target.id) ? color(link.class) : '#E5E5E5'
             })
   
             nodeElements.attr('fill', function (node) {
@@ -25638,8 +25697,8 @@
   
           // select matiral and toggle all related materials
           function selectProcessGroupOfNode(p, linkElements, nodeElements) {
-            // const group = nodes.filter(n => n.prod === p)
-            const group = nodes.filter(n => n.process.includes(input.value))
+            const group = nodes.filter(n => n.prod === p)
+            // const group = nodes.filter(n => n.process.includes(p))
             let allNeighborsIds = []
             let allNeighborsObj = []
 
@@ -25651,7 +25710,7 @@
             })
             allNeighborsIds = allNeighborsIds.flat()
             linkElements.attr('stroke', function (link) {
-              return allNeighborsIds.includes(link.target.id) ? 'green' : '#E5E5E5'
+              return allNeighborsIds.includes(link.target.id) ? color(link.class) : '#E5E5E5'
             })
   
             nodeElements.attr('fill', function (node) {

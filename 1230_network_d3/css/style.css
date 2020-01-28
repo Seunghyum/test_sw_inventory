@@ -1022,8 +1022,13 @@ input[type=submit] {
   background-color: rgba(255, 255, 255,0.8)
 }
 .nav-search .field-wrapper {
+  padding:10px;
   flex: 1 1 0;
   width: 33%;
+  border-right: 1px solid silver;
+}
+.nav-search .field-wrapper:last-child {
+  border-right: none;
 }
 /* .nav-search .field .autocomplete-item{
   border-right: 1px solid silver;
@@ -1152,7 +1157,6 @@ input[type=submit] {
   font-size: 1rem;
   line-height: 1.5;
   border-radius: .25rem;
-  margin-top:10px;
 }
 .nm-btn > i {
   font-size: 15px;
@@ -1221,4 +1225,13 @@ input[type=submit] {
 }
 .filter-item {
   padding: 5px;
+}
+#filtering {
+  position: absolute;
+  background-color: skyblue;
+  top: 0px;
+  right: 0px;
+}
+.nm-btn.view-detail {
+margin-top:10px;
 }
