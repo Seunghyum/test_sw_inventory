@@ -204,13 +204,32 @@
                 <button class="btn btn-outline-secondary" id="search-input-button" type="button">검색</button>
               </div>
             </div>
-            <div class='align-center'>취급 공정</div>
-            <div class='align-center'>취급 품목</div>
+            <div class='align-center'>
+              <span>취급 공정</span>
+            </div>
+            <div class='align-center'>
+              <span>취급 품목</span>
+            </div>
           </div>
           <div id="autocomplete-list" class="autocomplete-items hidden">
-            <div class="field name"></div>
+            <div class="field-wrapper">
+              <div class="field name"></div>
+            </div>
+            <div class="field-wrapper">
+              <div class="align-center">
+                <button id="process-field-cancel" class="nm-btn">선택 취소</button>
+              </div>
+              <div class="field process"></div>
+            </div>
+            <div class="field-wrapper">
+              <div class="align-center">
+                <button id="material-field-cancel" class="nm-btn">선택 취소</button>
+              </div>
+              <div class="field material"></div>
+            </div>
+            <!-- <div class="field name"></div>
             <div class="field process"></div>
-            <div class="field material"></div>
+            <div class="field material"></div> -->
           </div>
           <!-- <div class="state"></div>
           <div class="results"></div> -->

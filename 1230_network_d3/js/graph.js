@@ -25559,7 +25559,22 @@
   
   
   
-  
+          // 선택 취소 - 취급 공정
+          document.getElementById('process-field-cancel').addEventListener('click', (e) => {
+            e.preventDefault()
+            const processChekcedList = document.querySelectorAll('.field.process .autocomplete-item-check-input:checked')
+            processChekcedList.forEach(chk => {
+              chk.checked = false
+            })
+          })
+          // 선택 취소 - 취급 품목
+          document.getElementById('material-field-cancel').addEventListener('click', (e) => {
+            e.preventDefault()
+            const materialChekcedList = document.querySelectorAll('.field.material .autocomplete-item-check-input:checked')
+            materialChekcedList.forEach(chk => {
+              chk.checked = false
+            })
+          })
   
           //-----START--- draw material, process list //
           const nameField = document.querySelector("#autocomplete-list .name.field");
