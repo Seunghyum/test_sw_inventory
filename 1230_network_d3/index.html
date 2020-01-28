@@ -198,11 +198,14 @@
       <div class="search-box-wrapper">
         <div class="autocomplete">
           <div class="nav-search__header">
-            <div class='align-center'>
-              <input type="text" id="searchwrapper" name="search" placeholder="취급 상품 혹은 상호명을 검색하세요." class="formcongrol  search-input"/>
+            <div class='align-center searchwrapper input-group'>
+              <input type="text" name="search" id="search-input" placeholder="취급 상품 혹은 상호명을 검색하세요." class="formcongrol  search-input form-control" />
+              <div class="input-group-append">
+                <button class="btn btn-outline-secondary" id="search-input-button" type="button">검색</button>
+              </div>
             </div>
             <div class='align-center'>취급 공정</div>
-            <div class='align-center'>취급 품목</div class='align-center'>
+            <div class='align-center'>취급 품목</div>
           </div>
           <div id="autocomplete-list" class="autocomplete-items hidden">
             <div class="field name"></div>
@@ -234,7 +237,7 @@
         <div id="data"></div>
         <div id="p">Connections</div>
         <a id= "link"></a>
-        <div class="attributepane-list-wrapper">
+        <div class="attributepane-list-wrapper" id="store-wrapper">
           <div class="title">Store</div>
           <div id="store" class="attributepane-list"></div>
         </div>

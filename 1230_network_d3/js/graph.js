@@ -24907,10 +24907,10 @@
               // selectedId = selectedNode.id
               // updateData(selectedNode)
             // updateSimulation()
-            console.log('val : ', val)
+
             if(val) {
               $("#attributepane").show();
-              $("#attributepane-left").hide();            
+              // $("#attributepane-left").hide();            
               
               if (selectedNode.node_type == '상점') {
                 document.getElementById('name').innerHTML = '<strong>업체명 </strong>' + selectedNode.label;
@@ -24953,10 +24953,10 @@
             let materialArray = []
             let processArray = []
             nodes.forEach(row => {
-              if(row.Keyword.includes('searchText')) {
+              if(row.Keyword.includes(val)) {
                 materialArray.push(row)
               }
-              if(row.Keyword.includes('searchText')) {
+              if(row.Keyword.includes(val)) {
                 processArray.push(row)
               }
             })
@@ -24985,7 +24985,7 @@
               // updateData(selectedNode)
               updateSimulation()
               $("#attributepane").show();
-              $("#attributepane-left").hide();
+              // $("#attributepane-left").hide();
   
               var neighbors = getNeighbors(selectedNode)
   
@@ -24998,22 +24998,56 @@
                 return getLinkColor(selectedNode, link)
               })
             }
-  
+
             if (selectedNode.node_type == '상점') {
               const targetStore = storeDB.find(data => data.name === selectedNode.label)
               const linkToStoreDetailPage = targetStore ? '<a class="nm-btn" target="_blank" href="' + defaultHref + targetStore.id + '">상품 상세정보 보기</a>' : ''
+              
               document.getElementById('name').innerHTML = '<strong>업체명 </strong>' + selectedNode.label;
+              console.log("document.getElementById('name') : ", document.getElementById('name'))
               document.getElementById('data').innerHTML = 
                 '<strong>주소</strong> 서울시 ' + selectedNode.dist + ' ' + selectedNode.address +
                 ' <br> <strong>전화번호 </strong> 02-' + selectedNode.phone +
                 ' <br><br><strong>취급 품목, 공정</strong><br>' + selectedNode.descriptions +
                 '<br>' +
                 linkToStoreDetailPage;
+              
             } else if (selectedNode.node_type == '공정') {
               document.getElementById('name').innerHTML = '<strong>공정명 </strong>' + selectedNode.label;
             } else {
               document.getElementById('name').innerHTML = '<strong>재료 및 품목 </strong>' + selectedNode.label;
             };
+            document.querySelector('#attributepane #store-wrapper').classList.add('hidden')
+            const materialItems = selectedNode.products.split(",")
+            const materialField = document.querySelector('#attributepane #material')
+            materialField.innerHTML = ''
+            materialItems.forEach(m => {
+              if(m === 'NA') return false
+              let materialFieldItem = document.createElement("DIV")
+              materialFieldItem.setAttribute("class","attributepane-item")
+              materialFieldItem.addEventListener('click', (e) => {
+                e.preventDefault();
+                selectMaterialGroupOfNode(m, linkElements, nodeElements)
+              })
+              materialFieldItem.innerHTML = `<span>${m}</span>`
+              materialField.append(materialFieldItem)
+            })
+
+            const processItems = selectedNode.process.split(",")
+            const processField = document.querySelector('#attributepane #process')
+            processField.innerHTML = ''
+            processItems.forEach(p => {
+              if(p === 'NA') return false
+              let processFieldItem = document.createElement("DIV")
+              processFieldItem.setAttribute("class","attributepane-item")
+              processFieldItem.addEventListener('click', (e) => {
+                e.preventDefault();
+                selectProcessGroupOfNode(p, linkElements, nodeElements)
+              })
+              processFieldItem.innerHTML = `<span>${p}</span>`
+              processField.append(processFieldItem)
+            })
+
   
             // var neighbors = getNeighbors(selectedNode)
   
@@ -25026,15 +25060,15 @@
             //   return getLinkColor(selectedNode, link)
             // })
   
-            ul = document.createElement('ul');
-            document.getElementById('link').appendChild(ul);
-            console.log('===nodes : ', nodes)
-            nodes.forEach(function (node) {
-              let li = document.createElement('li');
-              ul.appendChild(li);
+            // ul = document.createElement('ul');
+            // document.getElementById('link').appendChild(ul);
+            // console.log('===nodes : ', nodes)
+            // nodes.forEach(function (node) {
+            //   let li = document.createElement('li');
+            //   ul.appendChild(li);
   
-              li.innerHTML += node.label;
-            });
+            //   li.innerHTML += node.label;
+            // });
           }
   
           // this helper simple adds all nodes and links
@@ -25146,7 +25180,6 @@
               .text(function (d) {
                 return d.label
               })
-                  //  .attr('font-size', 3)
               .attr("font-size", function (d) {
                 const data = links.find(l => {
                   return d.id == l.source || d.id == l.target
@@ -25227,6 +25260,10 @@
           // last but not least, we call updateSimulation
           // to trigger the initial render
           updateSimulation()
+
+          function onChangeSearchText(val) {
+            document.getElementById('search-status').innerHTML = `<div class="title">검색어 : ${val} <div>`
+          }
   
           function autocomplete(inp, {
             keywords,
@@ -25242,37 +25279,26 @@
             // const processField = document.querySelector("#autocomplete-list .process.field");
             // const materialField = document.querySelector("#autocomplete-list .material.field");
             /*execute a function when someone writes in the text field:*/
-  
+
+            inp.addEventListener("change", function (e) {
+              var val = this.value;
+              /*close any already open lists of autocompleted values*/
+              onChangeSearchText(val)
+            })
+            inp.addEventListener("click", function (e) {
+              document.getElementById('autocomplete-list').classList.remove("hidden");
+            })
             inp.addEventListener("input", function (e) {
               e.preventDefault();
               document.getElementById('autocomplete-list').classList.remove("hidden");
               var val = this.value;
+              onChangeSearchText(val)
               /*close any already open lists of autocompleted values*/
+
               closeAllLists();
               if (!val) return false;
               currentFocus = -1;
-              
-              // // append materialClassName to list
-              // materialClassName.forEach(m => {
-              //   let materialFieldItem = document.createElement("DIV")
-              //   materialFieldItem.setAttribute("class", "autocomplete-item material-field-item")
-              //   materialFieldItem.addEventListener('click',() => {
-              //     selectMaterialGroupOfNode(m)
-              //   })
-              //   materialFieldItem.innerHTML = "<span>" + m + "</span>"
-              //   materialField.append(materialFieldItem)
-              // })
-  
-              // // append processClassName to list
-              // processClassName.forEach(p => {
-              //   let processFieldItem = document.createElement("DIV")
-              //   processFieldItem.setAttribute("class", "autocomplete-item")
-              //   processFieldItem.addEventListener('click',() => {
-              //     selectProcessGroupOfNode(p)
-              //   })
-              //   processFieldItem.innerHTML = "<span>" + p + "</span>"
-              //   processField.append(processFieldItem)
-              // })
+
               for (let i = 0; i < keywords.length; i++) {
                 /*check if the item starts with the same letters as the text field value:*/
                 if ([keywords[i].name, keywords[i].descriptions, keywords[i].prod].filter(k => k.includes(val)).length > 0) {
@@ -25287,7 +25313,10 @@
                   /*execute a function when someone clicks on the item value (DIV element):*/
                   nameFieldElement.addEventListener("click", function (e) {
                     /*insert the value for the autocomplete text field:*/
+                    document.getElementById('autocomplete-list').classList.add("hidden");
+
                     inp.value = this.getElementsByTagName("input")[0].value;
+                    
                     /*close the list of autocompleted values,
                     (or any other open lists of autocompleted values:*/
                     closeAllLists();
@@ -25306,20 +25335,16 @@
             // user press enter key on search box
             inp.addEventListener("keyup", function(event) {
               // Number 13 is the "Enter" key on the keyboard
-              event.preventDefault();
+              // event.preventDefault();
               if (event.keyCode !== 13) return false
-              
+              closeAllLists();
               $("#attributepane").show();
               
               document.getElementById('autocomplete-list').classList.remove("hidden");
               var val = this.value;
               /*close any already open lists of autocompleted values*/
-              closeAllLists();
-
-              document.getElementById('search-status').innerHTML = `<div class="title">검색어 : ${val} <div>`
 
               let storeArray = []
-              console.log('keywords : ', keywords)
               for (let i = 0; i < keywords.length; i++) {
                 if ([keywords[i].name, keywords[i].descriptions, keywords[i].prod].filter(k => k.includes(val)).length > 0) {
                   storeArray.push(keywords[i])
@@ -25329,8 +25354,8 @@
               storeArray.forEach(s => {
                 let storeFieldItem = document.createElement("DIV")
                 storeFieldItem.setAttribute("class", "attributepane-item")
-                storeFieldItem.addEventListener('click',() => {
-                  selectNode(s)
+                storeFieldItem.addEventListener('click',(e) => {
+                  selectNode(s,e)
                 })
                 storeFieldItem.innerHTML = "<span>" + s.name + "</span>"
                 
@@ -25358,6 +25383,41 @@
                 })
                 processFieldItem.innerHTML = "<span>" + p + "</span>"
                 document.querySelector('#attributepane #process').append(processFieldItem)
+              })
+            });
+
+            // user press enter key on search button 검색 버튼 클릭시 필터링
+            document.querySelector('#search-input-button').addEventListener("click", function(event) {
+
+              $("#attributepane").show();
+              document.querySelector('#attributepane #store-wrapper').classList.remove('hidden')
+              document.getElementById('autocomplete-list').classList.add("hidden");
+              
+              let allNeighborsIds = []
+
+              const processChekced = document.querySelectorAll('.field.process .autocomplete-item-check-input:checked')
+              processChekced.forEach((input) => {
+                // const nodeGroup = nodes.filter(n => n.process.includes(input.value))
+                const nodeGroup = nodes.filter(n => n.label === input.value)
+                allNeighborsIds.push(nodeGroup.map(g => g.id))
+              })
+
+              const materialChekced = document.querySelectorAll('.field.material .autocomplete-item-check-input:checked')
+              
+              materialChekced.forEach((input) => {
+                // const nodeGroup = nodes.filter(n => n.products.includes(input.value))
+                const nodeGroup = nodes.filter(n => n.label === input.value)
+                allNeighborsIds.push(nodeGroup.map(g => g.id))
+              })
+              
+              allNeighborsIds = allNeighborsIds.flat()
+              linkElements.attr('stroke', function (link) {
+                return allNeighborsIds.some(id => id === link.target.id || id === link.source.id) ? color(link.class) : '#E5E5E5'
+                // return allNeighborsIds.includes(link.target.id) ? 'green' : '#E5E5E5'
+              })
+    
+              nodeElements.attr('fill', function (node) {
+                return getNodeColor(node, allNeighborsIds)
               })
             });
 
@@ -25417,16 +25477,17 @@
               document.querySelector('#attributepane #store').innerHTML=""
               document.querySelector('#attributepane #material').innerHTML=""
               document.querySelector('#attributepane #process').innerHTML=""
-              document.querySelector('#attributepane #name').innerHTML=""
-              document.querySelector('#attributepane #data').innerHTML=""
-              document.querySelector('#attributepane #p').innerHTML=""
-              document.querySelector('#attributepane #link').innerHTML=""
+              // document.querySelector('#attributepane #name').innerHTML=""
+              // document.querySelector('#attributepane #data').innerHTML=""
+              // document.querySelector('#attributepane #p').innerHTML=""
+              // document.querySelector('#attributepane #link').innerHTML=""
             }
             // /*execute a function when someone clicks in the document:*/
-            document.addEventListener("click", function () {
-              closeAllLists();
-              document.getElementById('autocomplete-list').classList.add("hidden");
-            });
+            // document.querySelector('svg').addEventListener("click", function (e) {
+            //   console.log('qweqweqeqweqwewqqe')
+            //   closeAllLists();
+            //   document.getElementById('autocomplete-list').classList.add("hidden");
+            // });
           }
   
           // document.getElementById("close").addEventListener ("click", closeplane, false);
@@ -25443,8 +25504,14 @@
             resetData()
             updateSimulation()
             resetGraph()
+
+            document.querySelector('#attributepane #name').innerHTML=""
+            document.querySelector('#attributepane #data').innerHTML=""
+            document.querySelector('#attributepane #p').innerHTML=""
+            document.querySelector('#attributepane #link').innerHTML=""
             $("#attributepane").hide();
-            $("#attributepane-left").show();
+            document.getElementById('autocomplete-list').classList.add("hidden");
+            // $("#attributepane-left").show();
           });
   
           document.getElementById("reset-map").addEventListener("click", function (e) {
@@ -25454,34 +25521,34 @@
             resetGraph()
           });
   
-          document.querySelector('.search-box-wrapper').addEventListener('click', function() {
-            const processField = document.querySelector("#autocomplete-list .process.field");
-            const materialField = document.querySelector("#autocomplete-list .material.field");
-            materialClassName.forEach(m => {
-              let materialFieldItem = document.createElement("DIV")
-              materialFieldItem.setAttribute("class", "autocomplete-item material-field-item")
-              materialFieldItem.addEventListener('click',() => {
-                selectMaterialGroupOfNode(m, linkElements, nodeElements)
-              })
-              materialFieldItem.innerHTML = "<span>" + m + "</span>"
-              materialField.append(materialFieldItem)
-            })
+          // document.querySelector('.search-box-wrapper').addEventListener('click', function() {
+          //   const processField = document.querySelector("#autocomplete-list .process.field");
+          //   const materialField = document.querySelector("#autocomplete-list .material.field");
+          //   materialClassName.forEach(m => {
+          //     let materialFieldItem = document.createElement("DIV")
+          //     // materialFieldItem.setAttribute("class", "autocomplete-item material-field-item")
+          //     materialFieldItem.addEventListener('click',() => {
+          //       selectMaterialGroupOfNode(m, linkElements, nodeElements)
+          //     })
+          //     materialFieldItem.innerHTML = "<span>" + m + "</span>"
+          //     materialField.append(materialFieldItem)
+          //   })
   
-            processClassName.forEach(p => {
-              let processFieldItem = document.createElement("DIV")
-              processFieldItem.setAttribute("class", "autocomplete-item")
-              processFieldItem.addEventListener('click',() => {
-                selectProcessGroupOfNode(p, linkElements, nodeElements)
-              })
-              processFieldItem.innerHTML = "<span>" + p + "</span>"
-              processField.append(processFieldItem)
-            })
-          })
+          //   processClassName.forEach(p => {
+          //     let processFieldItem = document.createElement("DIV")
+          //     // processFieldItem.setAttribute("class", "autocomplete-item")
+          //     processFieldItem.addEventListener('click',() => {
+          //       selectProcessGroupOfNode(p, linkElements, nodeElements)
+          //     })
+          //     processFieldItem.innerHTML = "<span>" + p + "</span>"
+          //     processField.append(processFieldItem)
+          //   })
+          // })
   
           // const autocompleteListName = nodes.map(n => ({name: n.name, descriptions: n.descriptions, prod:n.prod}))
   
           autocomplete(
-            document.getElementById("searchwrapper"), {
+            document.getElementById("search-input"), {
               keywords: nodes,
               nodes,
               processClassName,
@@ -25499,33 +25566,42 @@
           const processField = document.querySelector("#autocomplete-list .process.field");
           const materialField = document.querySelector("#autocomplete-list .material.field");
           // append materialClassName to list
-          materialClassName.forEach(m => {
+          materialClassName.forEach((m,i) => {
             let materialFieldItem = document.createElement("DIV")
-            materialFieldItem.setAttribute("class", "autocomplete-item material-field-item")
-            materialFieldItem.addEventListener('click',() => {
-              selectMaterialGroupOfNode(m, linkElements, nodeElements)
-            })
-            materialFieldItem.innerHTML = "<span>" + m + "</span>"
+            materialFieldItem.setAttribute("class", "filter-item material-field-item")
+            // materialFieldItem.addEventListener('click',() => {
+            //   selectMaterialGroupOfNode(m, linkElements, nodeElements)
+            // })
+            materialFieldItem.innerHTML = `
+              <input class="autocomplete-item-check-input" type="checkbox" value="${m}" id="m${i}">
+              <label class="autocomplete-item-check-label" for="m${i}">
+                ${m}
+              </label>
+            `
+            // materialFieldItem.innerHTML = "<span>" + m + "</span>"
             materialField.append(materialFieldItem)
           })
   
           // append processClassName to list
-          processClassName.forEach(p => {
+          processClassName.forEach((p,i) => {
             let processFieldItem = document.createElement("DIV")
-            processFieldItem.setAttribute("class", "autocomplete-item")
-            processFieldItem.addEventListener('click',() => {
-              selectProcessGroupOfNode(p, linkElements, nodeElements)
-            })
-            processFieldItem.innerHTML = "<span>" + p + "</span>"
+            processFieldItem.setAttribute("class", "filter-item")
+            // processFieldItem.addEventListener('click',() => {
+            //   selectProcessGroupOfNode(p, linkElements, nodeElements)
+            // })
+            processFieldItem.innerHTML = `
+            <input class="autocomplete-item-check-input" type="checkbox" value="${p}" id="p${i}">
+              <label class="autocomplete-item-check-label" for="p${i}">
+                ${p}
+              </label>
+            `
             processField.append(processFieldItem)
           })
   
           // select matiral and toggle all related materials
           function selectMaterialGroupOfNode(m, linkElements, nodeElements) {
-            const group = nodes.filter(l => l.Keyword === m)
-            console.log('nodes : ', nodes)
-            console.log('m : ', m)
-            console.log('group : ', group)
+            // const group = nodes.filter(l => l.Keyword === m)
+            const group = nodes.filter(n => n.products.includes(input.value))
             let allNeighborsIds = []
             let allNeighborsObj = []
             group.forEach(g => {
@@ -25535,7 +25611,7 @@
               allNeighborsObj.push(node)
             })
             allNeighborsIds = allNeighborsIds.flat()
-            console.log("allNeighborsIds : ", allNeighborsIds)
+
             linkElements.attr('stroke', function (link) {
               return allNeighborsIds.includes(link.target.id) ? 'green' : '#E5E5E5'
             })
@@ -25547,7 +25623,8 @@
   
           // select matiral and toggle all related materials
           function selectProcessGroupOfNode(p, linkElements, nodeElements) {
-            const group = nodes.filter(l => l.process === p)
+            // const group = nodes.filter(n => n.prod === p)
+            const group = nodes.filter(n => n.process.includes(input.value))
             let allNeighborsIds = []
             let allNeighborsObj = []
 
