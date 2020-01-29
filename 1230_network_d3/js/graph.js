@@ -842,13 +842,16 @@
           var shape = d3.scaleOrdinal(d3.symbols);
           // Initial transform to apply
           var defaultZoom = 0.9
+          var maxZoom = 0.3
+          var minZoom = 1
           // var transform = d3.zoomIdentity.translate(480, 250).scale(0.3);
-          var transform = d3.zoomIdentity.translate(480, 250).scale(defaultZoom);
-          var zoom = d3.zoom().on("zoom", handleZoom);
+          var transform = d3.zoomIdentity.translate(0, 0).scale(defaultZoom);
+          // var transform = d3.zoomIdentity.scale(defaultZoom);
+          var zoom = d3.zoom().scaleExtent([maxZoom, minZoom]).on("zoom", handleZoom);
   
           var svg = d3.select('svg')
             .call(zoom) // Adds zoom functionality
-            .call(zoom.transform, transform); // Calls/inits handleZoom
+            // .call(zoom.transform, transform); // Calls/inits handleZoom
   
           svg.attr('width', width).attr('height', height)
   
@@ -1069,17 +1072,22 @@
           // we either update the data according to the selection
           // or reset the data if the same node is clicked twice
           function selectNode(selectedNode, e) {
+            
+            centerNode(this.getBBox(), 1)
+            
             if(typeof(e) === 'object') e.preventDefault()
             if (selectedId === selectedNode.id) {
+              $("#attributepane").hide();
               selectedId = undefined
               resetData()
               updateSimulation()
               resetGraph()
             } else {
+              $("#attributepane").show();
+              document.querySelector('#attributepane #detail-info').classList.remove('hidden')
               selectedId = selectedNode.id
               // updateData(selectedNode)
               updateSimulation()
-              $("#attributepane").show();
               // $("#attributepane-left").hide();
   
               var neighbors = getNeighbors(selectedNode)
@@ -1096,7 +1104,7 @@
 
             if (selectedNode.node_type == '상점') {
               const targetStore = storeDB.find(data => data.name === selectedNode.label)
-              const linkToStoreDetailPage = targetStore ? '<a class="nm-btn" target="_blank" href="' + defaultHref + targetStore.id + '">상품 상세정보 보기</a>' : ''
+              const linkToStoreDetailPage = targetStore ? '<a class="nm-btn view-detail" target="_blank" href="' + defaultHref + targetStore.id + '">상품 상세정보 보기</a>' : ''
               
               document.getElementById('name').innerHTML = '<strong>업체명 </strong>' + selectedNode.label;
               // console.log("document.getElementById('name') : ", document.getElementById('name'))
@@ -1286,6 +1294,9 @@
               .attr("dy", ".35em")
               .attr("text-anchor", "middle")
               .attr("class", "label-txt")
+              .attr('id', d => {
+                return `text-${d.id}`
+              })
               .attr("filter", "url(#addbackground)")
               //          .attr("stroke", "white")
               //          .attr("stroke-width", ".7px")
@@ -1296,11 +1307,38 @@
   
   
           ////////////////////////////////////////////////////////////////
-          function centerNode(xx, yy){
-            g.transition()
-            // .duration(500)
-            // .attr("transform", "translate(" + (width/2 - xx) + "," + (height/2 - yy) + ")scale(" + 1 + ")")
-            .attr("transform", "translate(" + xx + "," + yy + ")scale(" + 1 + ")")
+          function centerNode(bbox, zoom=defaultZoom){
+            // console.log('xx : ', xx)
+            // console.log('yy : ', yy)
+            // console.log('linkGroup.node().getBBox : ', linkGroup.node().getBBox)
+            const rootbbox = linkGroup.node().getBBox()
+            const vx = rootbbox.x;		// container x co-ordinate
+            const vy = rootbbox.y;		// container y co-ordinate
+            const vw = rootbbox.width;	// container width
+            const vh = rootbbox.height;
+            const bx = bbox.x;
+            const by = bbox.y;
+            const bw = bbox.width;
+            const bh = bbox.height;
+            const tx = -bx*zoom + vx + vw/2 - bw*zoom/2;
+            const ty = -by*zoom + vy + vh/2 - bh*zoom/2;
+          
+            linkGroup
+              .transition()
+              .duration(500)
+              // .call(zoom.transform, d3.zoomIdentity.translate(x, y).scale(zoom))
+              .attr("transform", `translate(${tx},${ty}) scale(${zoom})`)
+            nodeGroup
+              .transition()
+              .duration(500)
+              // .call(zoom.transform, d3.zoomIdentity.translate(x, y).scale(zoom))
+              .attr("transform", `translate(${tx},${ty}) scale(${zoom})`)
+            textGroup 
+              .transition()
+              .duration(500)
+              // .call(zoom.transform, d3.zoomIdentity.translate(x, y).scale(zoom))
+              .attr("transform", `translate(${tx},${ty}) scale(${zoom})`)
+            // d3.transform(s.attr("transform")).translate[0]
           }
         
           function handleZoom() {
@@ -1652,7 +1690,7 @@
 
             document.querySelector('#attributepane #name').innerHTML=""
             document.querySelector('#attributepane #data').innerHTML=""
-            document.querySelector('#attributepane #p').innerHTML=""
+            // document.querySelector('#attributepane #p').innerHTML=""
             document.querySelector('#attributepane #link').innerHTML=""
             $("#attributepane").hide();
             document.getElementById('autocomplete-list').classList.add("hidden");
@@ -1704,42 +1742,69 @@
 
           document.getElementById('toggle-filter1').addEventListener('click', (e) => {
             document.getElementById('filter-list').classList.toggle("hidden")
+            document.querySelector('#toggle-filter1 i').classList.toggle("rotate-180")
           })
           document.getElementById('toggle-filter2').addEventListener('click', (e) => {
             document.getElementById('filter-list').classList.toggle("hidden")
+            document.querySelector('#toggle-filter2 i').classList.toggle("rotate-180")
           })
 
           // 필터링 버튼
           document.getElementById('filtering').addEventListener('click', (e) => {
             e.preventDefault()
             
-            // $("#attributepane").show();
-            document.querySelector('#attributepane #store-wrapper').classList.remove('hidden')
+            $("#attributepane").show();
+            document.querySelector('#attributepane #store-wrapper').classList.add('hidden')
+            document.querySelector('#attributepane #detail-info').classList.add('hidden')
             document.getElementById('filter-list').classList.add("hidden");
-            // $('#filter-list').toggleClass('hidden')
-            console.log("document.getElementById('filter-list') : ", document.getElementById('filter-list'))
             
             let allNeighborsIds = []
 
             const processChekced = document.querySelectorAll('.field.process .filter-item-check-input:checked')
+            const processField = document.querySelector('#attributepane #process')
+            processField.innerHTML = ''
             processChekced.forEach((input) => {
-              // const nodeGroup = nodes.filter(n => n.process.includes(input.value))
-              const nodeGroup = nodes.filter(n => n.label === input.value)
-              allNeighborsIds.push(nodeGroup.map(g => g.id))
+              // const processFieldItems = nodes.filter(n => n.process.includes(input.value))
+              const processFieldItems = nodes.filter(n => n.label === input.value)
+              allNeighborsIds.push(processFieldItems.map(g => g.id))
+
+              processFieldItems.forEach(p => {
+                if(p === 'NA') return false
+                let processFieldItem = document.createElement("DIV")
+                processFieldItem.setAttribute("class","attributepane-item")
+                processFieldItem.addEventListener('click', (e) => {
+                  e.preventDefault();
+                  selectProcessGroupOfNode(p.label, linkElements, nodeElements)
+                })
+                processFieldItem.innerHTML = `<span>${p.label}</span>`
+                processField.append(processFieldItem)
+              })
             })
 
             const materialChekced = document.querySelectorAll('.field.material .filter-item-check-input:checked')
-            
+            const materialField = document.querySelector('#attributepane #material')
+            materialField.innerHTML = ''
             materialChekced.forEach((input) => {
-              // const nodeGroup = nodes.filter(n => n.products.includes(input.value))
-              const nodeGroup = nodes.filter(n => n.label === input.value)
-              allNeighborsIds.push(nodeGroup.map(g => g.id))
+              // const materialItems = nodes.filter(n => n.products.includes(input.value))
+              const materialItems = nodes.filter(n => n.label === input.value)
+              allNeighborsIds.push(materialItems.map(g => g.id))
+
+              materialItems.forEach(m => {
+                if(m === 'NA') return false
+                let materialFieldItem = document.createElement("DIV")
+                materialFieldItem.setAttribute("class","attributepane-item")
+                materialFieldItem.addEventListener('click', (e) => {
+                  e.preventDefault();
+                  selectMaterialGroupOfNode(m.label, linkElements, nodeElements)
+                })
+                materialFieldItem.innerHTML = `<span>${m.label}</span>`
+                materialField.append(materialFieldItem)
+              })
             })
             
             allNeighborsIds = allNeighborsIds.flat()
             linkElements.attr('stroke', function (link) {
               return allNeighborsIds.some(id => id === link.target.id || id === link.source.id) ? color(link.class) : '#E5E5E5'
-              // return allNeighborsIds.includes(link.target.id) ? 'green' : '#E5E5E5'
             })
   
             nodeElements.attr('fill', function (node) {
@@ -1747,22 +1812,6 @@
             })
           })
 
-          // // 선택 취소 - 취급 공정
-          // document.getElementById('process-field-cancel').addEventListener('click', (e) => {
-          //   e.preventDefault()
-          //   const processChekcedList = document.querySelectorAll('.field.process .filter-item-check-input:checked')
-          //   processChekcedList.forEach(chk => {
-          //     chk.checked = false
-          //   })
-          // })
-          // // 선택 취소 - 취급 품목
-          // document.getElementById('material-field-cancel').addEventListener('click', (e) => {
-          //   e.preventDefault()
-          //   const materialChekcedList = document.querySelectorAll('.field.material .filter-item-check-input:checked')
-          //   materialChekcedList.forEach(chk => {
-          //     chk.checked = false
-          //   })
-          // })
           // 선택 취소 - 취급 품목
           document.getElementById('reset-filter').addEventListener('click', (e) => {
             e.preventDefault()
@@ -1814,8 +1863,8 @@
           })
   
           // select matiral and toggle all related materials
-          function selectMaterialGroupOfNode(m, linkElements, nodeElements) {
-            const group = nodes.filter(n => n.Keyword === m)
+          function selectMaterialGroupOfNode(val, linkElements, nodeElements) {
+            const group = nodes.filter(n => n.Keyword === val)
             // const group = nodes.filter(n => n.products.includes(m))
             let allNeighborsIds = []
             let allNeighborsObj = []
@@ -1825,6 +1874,11 @@
               allNeighborsIds.push(neighbors)
               allNeighborsObj.push(node)
             })
+            const node = group[0]
+            if(node) {
+              const bbox = d3.select(`#text-${node.id}`).node().getBBox()
+              centerNode(bbox, 0.6)
+            }
             allNeighborsIds = allNeighborsIds.flat()
 
             linkElements.attr('stroke', function (link) {
@@ -1837,8 +1891,8 @@
           }
   
           // select matiral and toggle all related materials
-          function selectProcessGroupOfNode(p, linkElements, nodeElements) {
-            const group = nodes.filter(n => n.prod === p)
+          function selectProcessGroupOfNode(val, linkElements, nodeElements) {
+            const group = nodes.filter(n => n.prod === val)
             // const group = nodes.filter(n => n.process.includes(p))
             let allNeighborsIds = []
             let allNeighborsObj = []
@@ -1849,6 +1903,12 @@
               allNeighborsIds.push(neighbors)
               allNeighborsObj.push(node)
             })
+            const node = group[0]
+            if(node) {
+              const bbox = d3.select(`#text-${node.id}`).node().getBBox()
+              centerNode(bbox, 0.6)
+            }
+
             allNeighborsIds = allNeighborsIds.flat()
             linkElements.attr('stroke', function (link) {
               return allNeighborsIds.includes(link.target.id) ? color(link.class) : '#E5E5E5'

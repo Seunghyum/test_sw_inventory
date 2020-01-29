@@ -194,8 +194,8 @@
         <span>포커싱 초기화</span>
       </button>
     </a> -->
-    <form class="nav-search" autocomplete="off" class="cf" style="margin-top: 20px;">
-      <div class='align-center searchwrapper input-group'>
+    <form class="nav-search" autocomplete="off" class="cf">
+      <div class='align-center search-wrapper input-group'>
         <input type="text" name="search" id="search-input" placeholder="취급 상품 혹은 상호명을 검색하세요." class="formcongrol  search-input form-control" />
         <div class="input-group-append">
           <button class="btn btn-outline-secondary" id="search-input-button" type="button">검색</button>
@@ -220,12 +220,14 @@
             <div class='nav-search__header--label'>
               <div id="toggle-filter1">
                 취급 공정
+                &nbsp;
                 <i class="icon-caret-down"></i>
               </div>
             </div>
             <div class='nav-search__header--label'>
               <div id="toggle-filter2">
                 취급 품목
+                &nbsp;
                 <i class="icon-caret-down"></i>
               </div>
             </div>
@@ -275,10 +277,12 @@
             <i class="icon-remove"></i> <span>검색 취소</span>
           </button>
         </a>
-        <div id="name"></div>
-        <div id="data"></div>
-        <div id="p">Connections</div>
-        <a id= "link"></a>
+        <div id="detail-info">
+          <div id="name"></div>
+          <div id="data"></div>
+          <!-- <div id="p">Connections</div> -->
+          <a id= "link"></a>
+        </div>
         <div class="attributepane-list-wrapper" id="store-wrapper">
           <div class="title">Store</div>
           <div id="store" class="attributepane-list"></div>
