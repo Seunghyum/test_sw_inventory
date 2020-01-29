@@ -195,39 +195,61 @@
       </button>
     </a> -->
     <form class="nav-search" autocomplete="off" class="cf" style="margin-top: 20px;">
-      <div class="search-box-wrapper">
+      <div class='align-center searchwrapper input-group'>
+        <input type="text" name="search" id="search-input" placeholder="취급 상품 혹은 상호명을 검색하세요." class="formcongrol  search-input form-control" />
+        <div class="input-group-append">
+          <button class="btn btn-outline-secondary" id="search-input-button" type="button">검색</button>
+        </div>
+      </div>
+      <div id="autocomplete-list" class="autocomplete-items hidden">
+        <!-- <div class="field-wrapper"></div> -->
+        <div class="field name"></div>
+        <!-- </div> -->
+      </div>
+    </form>
+    <form class="nav-filter">
+      <div class="filter-box-wrapper" id="filter-box">
         <div class="autocomplete">
           <div class="nav-search__header">
-            <div class='align-center searchwrapper input-group'>
+            <!-- <div class='align-center searchwrapper input-group'>
               <input type="text" name="search" id="search-input" placeholder="취급 상품 혹은 상호명을 검색하세요." class="formcongrol  search-input form-control" />
               <div class="input-group-append">
                 <button class="btn btn-outline-secondary" id="search-input-button" type="button">검색</button>
               </div>
+            </div> -->
+            <div class='nav-search__header--label'>
+              <div id="toggle-filter1">
+                취급 공정
+                <i class="icon-caret-down"></i>
+              </div>
             </div>
-            <div class='align-center'>
-              <span>취급 공정</span>
-            </div>
-            <div class='align-center'>
-              <span>취급 품목</span>
+            <div class='nav-search__header--label'>
+              <div id="toggle-filter2">
+                취급 품목
+                <i class="icon-caret-down"></i>
+              </div>
             </div>
           </div>
-          <div id="autocomplete-list" class="autocomplete-items hidden">
-            <div class="field-wrapper">
+          <div id="filter-list" class="filter-items hidden">
+            <!-- <div class="field-wrapper">
               <div class="field name"></div>
-            </div>
+            </div> -->
             <div class="field-wrapper">
-              <button id="filtering" class="nm-btn">필터링</button>
-              <div class="align-center">
+              <!-- <div class="align-center">
                 <button id="process-field-cancel" class="nm-btn">선택 취소</button>
-              </div>
+              </div> -->
               <div class="field process"></div>
             </div>
             <div class="field-wrapper">
-              <div class="align-center">
+              <!-- <div class="align-center">
                 <button id="material-field-cancel" class="nm-btn">선택 취소</button>
-              </div>
+              </div> -->
               <div class="field material"></div>
             </div>
+            <button id="reset-filter" class="nm-btn">
+              <i class="icon-refresh"></i>
+            </button>
+            <button id="filtering" class="nm-btn">확인</button>
             <!-- <div class="field name"></div>
             <div class="field process"></div>
             <div class="field material"></div> -->

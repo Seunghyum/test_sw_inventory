@@ -12,3 +12,6 @@ Sewoon Inventory source code
 $ cd 1230_network_d3 && npx browser-sync start --server --files "*/**"
 ```
 
+SELECT id,address,description,material,name,officehour,photo,process,since,tel,project,lat,lang,no,goods,business,category,before_name,gu,idx,instagramKeyword FROM firstbike.store where project='firstbike'
+
+SELECT id,address,description,material,name,officehour,photo,process,since,tel,project,lat,lang,no,goods,business,category,before_name,gu,idx,instagramKeyword FROM firstbike.store where project='행운키트'
