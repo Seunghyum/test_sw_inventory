@@ -755,6 +755,11 @@
   const defaultHref = "http://ec2-52-79-189-203.ap-northeast-2.compute.amazonaws.com:8080/storedetail/" 
 
   $(document).ready(function () {
+    if(parent && parent.document && parent.document.querySelector('#content iframe')) {
+      parent.document.querySelector('#content iframe').style.height = "calc(100vh - 10px)"
+      parent.document.querySelector('body').style = "overflow: hidden";
+    }
+    console.log("parent.document.querySelector('#content iframe') : ",parent.document.querySelector('#content iframe'))
     d3.queue()
       .defer(d3.csv, "./data/edge_1230.csv")
       .defer(d3.csv, "./data/node_1230.csv")
@@ -853,7 +858,7 @@
             .call(zoom) // Adds zoom functionality
             // .call(zoom.transform, transform); // Calls/inits handleZoom
   
-          svg.attr('width', width).attr('height', height)
+          svg.attr('width', width).attr('height', height - 60)
   
           var linkElements,
             nodeElements,
@@ -881,10 +886,40 @@
             .forceSimulation()
             .force('link', linkForce)
             .force('charge', d3.forceManyBody().strength(-200).distanceMax(5000))
+            // .force('charge', d3.forceManyBody())
             .force('center', d3.forceCenter(width / 2, height / 2))
             .alphaTarget(0)
             .alphaDecay(0.15) // speed the visualization stops! now it is 7 sec
-            .velocityDecay(0.2);
+            .velocityDecay(0.2)
+
+            // .on("end", ticked)
+            // .stop()
+            // simulation.tick(1)
+
+            // function ticked() {
+            //   console.log('weqweqweq')
+            //   linkElements
+            //       .attr("x1", function(d) { return d.source.x; })
+            //       .attr("y1", function(d) { return d.source.y; })
+            //       .attr("x2", function(d) { return d.target.x; })
+            //       .attr("y2", function(d) { return d.target.y; });
+          
+            //   nodeElements
+            //        .attr("cx", function (d) { return d.x+6; })
+            //        .attr("cy", function(d) { return d.y-6; });
+            // }
+
+          // var simulation = d3
+          //   .forceSimulation()
+          //   .force('link', linkForce)
+          //   .force('charge', d3.forceManyBody())
+          //   .force('center', d3.forceCenter(width / 2, height / 2))
+          //   .stop()
+          // simulation.tick(3000)
+
+
+          // for (var i = 0; i < 3000; ++i) simulation.tick();
+          // simulation.tick(300);
           //    .force('forceCollide',d3.forceCollide()
           //        .radius(function (d){
           //          return 40
@@ -1071,10 +1106,13 @@
           // select node is called on every click
           // we either update the data according to the selection
           // or reset the data if the same node is clicked twice
+          function findAndCentroidNodeElement (selectedNode) {
+            const bbox = d3.select(`#text-${selectedNode.id}`).node().getBBox()
+            console.log('bbox : ', bbox)
+            centerNode(bbox, 0.6)
+          }
           function selectNode(selectedNode, e) {
-            
-            centerNode(this.getBBox(), 1)
-            
+            // centerNode(this.getBBox(), 0.6)
             if(typeof(e) === 'object') e.preventDefault()
             if (selectedId === selectedNode.id) {
               $("#attributepane").hide();
@@ -1300,7 +1338,10 @@
               .attr("filter", "url(#addbackground)")
               //          .attr("stroke", "white")
               //          .attr("stroke-width", ".7px")
-              .on('click', selectNode);
+              .on('click', function (e) {
+                selectNode(e)
+                centerNode(this.getBBox(), 0.6)
+              });
             //        .attr('color','rgba(255, 255, 255, 1)')
             textElements = textEnter.merge(textElements)
           }
@@ -1438,7 +1479,7 @@
                 if ([keywords[i].name, keywords[i].descriptions, keywords[i].prod].filter(k => k.includes(val)).length > 0) {
                   /*create a DIV element for each matching element:*/
                   const nameFieldElement = document.createElement("DIV");
-                  nameFieldElement.addEventListener("click", function (e) {return selectNode(nodes[i],e)});
+                  // nameFieldElement.addEventListener("click", function (e) {return selectNode(nodes[i],e)});
                   nameFieldElement.setAttribute("class", "autocomplete-item");
                   nameFieldElement.innerHTML = "<span class='title'>" + keywords[i].name + "</span><br>" +
                     "<span>" + nodes[i].address + "</span>"
@@ -1448,7 +1489,8 @@
                   nameFieldElement.addEventListener("click", function (e) {
                     /*insert the value for the autocomplete text field:*/
                     document.getElementById('autocomplete-list').classList.add("hidden");
-
+                    selectNode(keywords[i],e)
+                    findAndCentroidNodeElement(keywords[i],e)
                     // inp.value = this.getElementsByTagName("input")[0].value;
                     
                     /*close the list of autocompleted values,
@@ -1585,13 +1627,16 @@
               const materialField = document.querySelector('#attributepane #material')
               materialChekced.forEach((input) => {
                 const nodeGroup = nodes.filter(n => n.label === input.value)
-                materialFieldItem.setAttribute("class","attributepane-item")
-                materialFieldItem.addEventListener('click', (e) => {
-                  e.preventDefault();
-                  selectMaterialGroupOfNode(m, linkElements, nodeElements)
+                nodeGroup.forEach(m => {
+                  let materialFieldItem = document.createElement("DIV")
+                  materialFieldItem.setAttribute("class","attributepane-item")
+                  materialFieldItem.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    selectMaterialGroupOfNode(m, linkElements, nodeElements)
+                  })
+                  materialFieldItem.innerHTML = `<span>${m}</span>`
+                  materialField.append(materialFieldItem)
                 })
-                materialFieldItem.innerHTML = `<span>${m}</span>`
-                materialField.append(materialFieldItem)
               })
             }
 
@@ -1876,8 +1921,9 @@
             })
             const node = group[0]
             if(node) {
-              const bbox = d3.select(`#text-${node.id}`).node().getBBox()
-              centerNode(bbox, 0.6)
+              // const bbox = d3.select(`#text-${node.id}`).node().getBBox()
+              // centerNode(bbox, 0.6)
+              findAndCentroidNodeElement(node)
             }
             allNeighborsIds = allNeighborsIds.flat()
 
@@ -1904,9 +1950,12 @@
               allNeighborsObj.push(node)
             })
             const node = group[0]
+            console.log("group : ", group)
+            console.log("node : ", node)
             if(node) {
-              const bbox = d3.select(`#text-${node.id}`).node().getBBox()
-              centerNode(bbox, 0.6)
+              // const bbox = d3.select(`#text-${node.id}`).node().getBBox()
+              // centerNode(bbox, 0.6)
+              findAndCentroidNodeElement(node)
             }
 
             allNeighborsIds = allNeighborsIds.flat()
