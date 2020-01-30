@@ -846,7 +846,7 @@
   
           var shape = d3.scaleOrdinal(d3.symbols);
           // Initial transform to apply
-          var defaultZoom = 0.9
+          var defaultZoom = 1
           var maxZoom = 0.3
           var minZoom = 1
           // var transform = d3.zoomIdentity.translate(480, 250).scale(0.3);
@@ -856,7 +856,7 @@
   
           var svg = d3.select('svg')
             .call(zoom) // Adds zoom functionality
-            // .call(zoom.transform, transform); // Calls/inits handleZoom
+            .call(zoom.transform, transform); // Calls/inits handleZoom
   
           svg.attr('width', width).attr('height', height - 60)
   
@@ -925,15 +925,28 @@
           //          return 40
           //        }))
           //    .stop();
-  
+          let globalScreenX = 0
+          let globalScreenY = 0
           var dragDrop = d3.drag().on('start', function (node) {
+            console.log('ndoe : ', node)
             node.fx = node.x
             node.fy = node.y
-          }).on('drag', function (node) {
-            simulation.alphaTarget(0.3).restart()
+          })
+          // .on("drag", function() {
+
+          //   // d3.select(this)
+          //   //   .attr("cx", d.x = d3.event.x)
+          //   //   .attr("cy", d.y = d3.event.y);
+          // })
+          .on('drag', function (node) {
+            // simulation.alphaTarget(0.3).restart()
+            console.log('===dragstart=== ')
+            console.log('d3.event.x : ', d3.event.x)
             node.fx = d3.event.x
             node.fy = d3.event.y
-          }).on('end', function (node) {
+          })
+          .on('end', function (node) {
+            console.log('===dragend=== ')
             if (!d3.event.active) {
               simulation.alphaTarget(0)
             }
@@ -1108,8 +1121,7 @@
           // or reset the data if the same node is clicked twice
           function findAndCentroidNodeElement (selectedNode) {
             const bbox = d3.select(`#text-${selectedNode.id}`).node().getBBox()
-            console.log('bbox : ', bbox)
-            centerNode(bbox, 0.6)
+            centerNode(bbox, defaultZoom)
           }
           function selectNode(selectedNode, e) {
             // centerNode(this.getBBox(), 0.6)
@@ -1122,7 +1134,7 @@
               resetGraph()
             } else {
               $("#attributepane").show();
-              document.querySelector('#attributepane #detail-info').classList.remove('hidden')
+              if(selectedNode.node_type === "상점") document.querySelector('#attributepane #detail-info').classList.remove('hidden')
               selectedId = selectedNode.id
               // updateData(selectedNode)
               updateSimulation()
@@ -1152,14 +1164,76 @@
                 ' <br><br><strong>취급 품목, 공정</strong><br>' + selectedNode.descriptions +
                 '<br>' +
                 linkToStoreDetailPage;
-              
+                document.querySelector('#attributepane #store-wrapper').classList.add('hidden')
+                document.querySelector('#attributepane #material-wrapper').classList.remove('hidden')
+                document.querySelector('#attributepane #process-wrapper').classList.remove('hidden')
             } else if (selectedNode.node_type == '공정') {
               document.getElementById('name').innerHTML = '<strong>공정명 </strong>' + selectedNode.label;
+              document.querySelector('#attributepane #store-wrapper').classList.remove('hidden')
+              document.querySelector('#attributepane #material-wrapper').classList.add('hidden')
+              document.querySelector('#attributepane #process-wrapper').classList.add('hidden')
             } else {
               document.getElementById('name').innerHTML = '<strong>재료 및 품목 </strong>' + selectedNode.label;
+              document.querySelector('#attributepane #store-wrapper').classList.remove('hidden')
+              document.querySelector('#attributepane #material-wrapper').classList.add('hidden')
+              document.querySelector('#attributepane #process-wrapper').classList.add('hidden')
             };
-            document.querySelector('#attributepane #store-wrapper').classList.add('hidden')
-            const materialItems = selectedNode.products.split(",")
+
+            let materialItems = [], processItems = [], storeItems = []
+            links.forEach(l => {
+              if(selectedNode.id === l.target.id && selectedNode.node_type === '공정') {
+                console.log("processItems l : ", l)
+                if(l.source.node_type === '상점') storeItems.push(l.source.label)
+                else if(l.source.node_type === '재료및품목') materialItems.push(l.source.label)
+              } 
+              else if (selectedNode.id === l.source.id && selectedNode.node_type === '상점') {
+                console.log("storeItems l : ", l)
+                if(l.target.node_type === '공정') processItems.push(l.target.label)
+                else if(l.target.node_type === '재료및품목') materialItems.push(l.target.label)
+              }
+              else if(selectedNode.id === l.target.id && selectedNode.node_type === '재료및품목'){
+                console.log("materialItems l : ", l)
+                if(l.source.node_type === '상점') storeItems.push(l.source.label)
+                if(l.source.node_type === '공정') processItems.push(l.source.label)
+              }
+            })
+            // console.log('relatedLinks : ', relatedLinks)
+            
+            // relatedLinks.forEach(l => {
+            //   // const relatedNode = nodes.find(n => {
+            //   //   if(n.node_type === "공정") return n.id === l.source.id
+            //   //   else return n.id === l.target.id
+            //   // })
+              
+            //   console.log('relatedNode : ', relatedNode)
+            //   if(!relatedNode) return false
+            //   if(relatedNode.node_type === "공정") {
+            //     processItems.push(relatedNode.label)
+            //   } else {
+            //     materialItems.push(relatedNode.label)
+            //   }
+            // })
+            console.log('storeItems : ', storeItems)
+            console.log('materialItems : ', materialItems)
+            console.log('processItems : ', processItems)
+            // console.log('relatedNodes : ', relatedNodes)
+            // relatedNodes
+            // const materialItems = selectedNode.products.split(",")
+
+            const storeField = document.querySelector('#attributepane #store')
+            storeField.innerHTML = ''
+            storeItems.forEach(s => {
+              if(s === 'NA') return false
+              let storeFieldItem = document.createElement("DIV")
+              storeFieldItem.setAttribute("class","attributepane-item")
+              storeFieldItem.addEventListener('click', (e) => {
+                e.preventDefault();
+                selectstoreGroupOfNode(s, linkElements, nodeElements)
+              })
+              storeFieldItem.innerHTML = `<span>${s}</span>`
+              storeField.append(storeFieldItem)
+            })
+
             const materialField = document.querySelector('#attributepane #material')
             materialField.innerHTML = ''
             materialItems.forEach(m => {
@@ -1174,7 +1248,7 @@
               materialField.append(materialFieldItem)
             })
 
-            const processItems = selectedNode.process.split(",")
+            // const processItems = selectedNode.process.split(",")
             const processField = document.querySelector('#attributepane #process')
             processField.innerHTML = ''
             processItems.forEach(p => {
@@ -1188,28 +1262,6 @@
               processFieldItem.innerHTML = `<span>${p}</span>`
               processField.append(processFieldItem)
             })
-
-  
-            // var neighbors = getNeighbors(selectedNode)
-  
-            // // we modify the styles to highlight selected nodes
-            // nodeElements.attr('fill', function (node) {
-            //   return getNodeColor(node, neighbors)
-            // })
-            // //      textElements.attr('fill', function (node) { return getTextColor(node, neighbors) })
-            // linkElements.attr('stroke', function (link) {
-            //   return getLinkColor(selectedNode, link)
-            // })
-  
-            // ul = document.createElement('ul');
-            // document.getElementById('link').appendChild(ul);
-            // console.log('===nodes : ', nodes)
-            // nodes.forEach(function (node) {
-            //   let li = document.createElement('li');
-            //   ul.appendChild(li);
-  
-            //   li.innerHTML += node.label;
-            // });
           }
   
           // this helper simple adds all nodes and links
@@ -1361,8 +1413,10 @@
             const by = bbox.y;
             const bw = bbox.width;
             const bh = bbox.height;
-            const tx = -bx*zoom + vx + vw/2 - bw*zoom/2;
-            const ty = -by*zoom + vy + vh/2 - bh*zoom/2;
+            const tx = -bx*zoom + vx + vw/2 - bw*zoom/2 + 200;
+            const ty = -by*zoom + vy + vh/2 - bh*zoom/2 + 150;
+            globalScreenX = tx
+            globalScreenY = ty
           
             linkGroup
               .transition()
@@ -1490,7 +1544,7 @@
                     /*insert the value for the autocomplete text field:*/
                     document.getElementById('autocomplete-list').classList.add("hidden");
                     selectNode(keywords[i],e)
-                    findAndCentroidNodeElement(keywords[i],e)
+                    findAndCentroidNodeElement(keywords[i])
                     // inp.value = this.getElementsByTagName("input")[0].value;
                     
                     /*close the list of autocompleted values,
