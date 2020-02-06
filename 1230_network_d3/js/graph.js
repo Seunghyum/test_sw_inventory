@@ -848,7 +848,7 @@
           // Initial transform to apply
           var defaultZoom = 1
           var maxZoom = 0.3
-          var minZoom = 1
+          var minZoom = 1.5
           // var transform = d3.zoomIdentity.translate(480, 250).scale(0.3);
           var transform = d3.zoomIdentity.translate(0, 0).scale(defaultZoom);
           // var transform = d3.zoomIdentity.scale(defaultZoom);
@@ -1134,7 +1134,13 @@
               resetGraph()
             } else {
               $("#attributepane").show();
-              if(selectedNode.node_type === "상점") document.querySelector('#attributepane #detail-info').classList.remove('hidden')
+              console.log('selectedNode : ', selectedNode)
+              if(selectedNode.node_type === "상점") {
+                document.querySelector('#attributepane #detail-info').classList.remove('hidden')
+                document.querySelector('#attributepane #detail-info #data').classList.remove('hidden')
+              } else {
+                document.querySelector('#attributepane #detail-info #data').classList.add('hidden')
+              }
               selectedId = selectedNode.id
               // updateData(selectedNode)
               updateSimulation()
@@ -1165,37 +1171,36 @@
                 '<br>' +
                 linkToStoreDetailPage;
                 document.querySelector('#attributepane #store-wrapper').classList.add('hidden')
-                document.querySelector('#attributepane #material-wrapper').classList.remove('hidden')
-                document.querySelector('#attributepane #process-wrapper').classList.remove('hidden')
+                // document.querySelector('#attributepane #material-wrapper').classList.remove('hidden')
+                // document.querySelector('#attributepane #process-wrapper').classList.remove('hidden')
             } else if (selectedNode.node_type == '공정') {
               document.getElementById('name').innerHTML = '<strong>공정명 </strong>' + selectedNode.label;
               document.querySelector('#attributepane #store-wrapper').classList.remove('hidden')
-              document.querySelector('#attributepane #material-wrapper').classList.add('hidden')
-              document.querySelector('#attributepane #process-wrapper').classList.add('hidden')
+              // document.querySelector('#attributepane #material-wrapper').classList.add('hidden')
+              // document.querySelector('#attributepane #process-wrapper').classList.add('hidden')
             } else {
               document.getElementById('name').innerHTML = '<strong>재료 및 품목 </strong>' + selectedNode.label;
               document.querySelector('#attributepane #store-wrapper').classList.remove('hidden')
-              document.querySelector('#attributepane #material-wrapper').classList.add('hidden')
-              document.querySelector('#attributepane #process-wrapper').classList.add('hidden')
+              // document.querySelector('#attributepane #material-wrapper').classList.add('hidden')
+              // document.querySelector('#attributepane #process-wrapper').classList.add('hidden')
             };
 
             let materialItems = [], processItems = [], storeItems = []
             links.forEach(l => {
-              if(selectedNode.id === l.target.id && selectedNode.node_type === '공정') {
-                console.log("processItems l : ", l)
+              if(selectedNode.id === l.target.id && l.target.node_type === '공정') {
                 if(l.source.node_type === '상점') storeItems.push(l.source.label)
                 else if(l.source.node_type === '재료및품목') materialItems.push(l.source.label)
               } 
-              else if (selectedNode.id === l.source.id && selectedNode.node_type === '상점') {
-                console.log("storeItems l : ", l)
+              else if (selectedNode.id === l.source.id && l.source.node_type === '상점') {
                 if(l.target.node_type === '공정') processItems.push(l.target.label)
                 else if(l.target.node_type === '재료및품목') materialItems.push(l.target.label)
               }
-              else if(selectedNode.id === l.target.id && selectedNode.node_type === '재료및품목'){
-                console.log("materialItems l : ", l)
+              else if(selectedNode.id === l.target.id && l.target.node_type === '재료및품목'){
                 if(l.source.node_type === '상점') storeItems.push(l.source.label)
                 if(l.source.node_type === '공정') processItems.push(l.source.label)
               }
+              if(selectedNode.id === l.target.id) console.log('target l : ',  l)
+              if(selectedNode.id === l.source.id) console.log('source l : ',  l)
             })
             // console.log('relatedLinks : ', relatedLinks)
             
@@ -1228,7 +1233,7 @@
               storeFieldItem.setAttribute("class","attributepane-item")
               storeFieldItem.addEventListener('click', (e) => {
                 e.preventDefault();
-                selectstoreGroupOfNode(s, linkElements, nodeElements)
+                selectStoreGroupOfNode(s, linkElements, nodeElements)
               })
               storeFieldItem.innerHTML = `<span>${s}</span>`
               storeField.append(storeFieldItem)
@@ -1960,6 +1965,23 @@
             `
             processField.append(processFieldItem)
           })
+
+          // select store and toggle all related materials
+          function selectStoreGroupOfNode(val, linkElements, nodeElements) {
+            const node = nodes.find(n => n.name === val)
+            let = allNeighborsIds = getNeighbors(node)
+            if(node) {
+              findAndCentroidNodeElement(node)
+            }
+
+            linkElements.attr('stroke', function (link) {
+              return allNeighborsIds.includes(link.source.id) ? color(link.class) : '#E5E5E5'
+            })
+  
+            nodeElements.attr('fill', function (node) {
+              return getNodeColor(node, allNeighborsIds)
+            })
+          }
   
           // select matiral and toggle all related materials
           function selectMaterialGroupOfNode(val, linkElements, nodeElements) {
