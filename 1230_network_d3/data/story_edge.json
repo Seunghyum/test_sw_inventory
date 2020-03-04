@@ -1,0 +1,130 @@
+{
+  "edges": [{
+    "source": "11",
+    "target": "0",
+    "id": "3122",
+    "attributes": {
+      "prod": "간판",
+      "class": "간판및광고물"
+    },
+    "color": "rgb(0,199,255)",
+    "size": 1.0
+  }, {
+    "source": "9",
+    "target": "14",
+    "id": "3121",
+    "attributes": {
+      "prod": "부품",
+      "class": "금속자재"
+    },
+    "color": "rgb(105,196,4)",
+    "size": 1.0
+  }, {
+    "source": "8",
+    "target": "15",
+    "id": "3125",
+    "attributes": {
+      "prod": "장비제작",
+      "class": "기계제작3"
+    },
+    "color": "rgb(226,139,255)",
+    "size": 1.0
+  }, {
+    "source": "12",
+    "target": "17",
+    "id": "3126",
+    "attributes": {
+      "prod": "로구로",
+      "class": "기계제작2"
+    },
+    "color": "rgb(128,107,104)",
+    "size": 1.0
+  }, {
+    "source": "7",
+    "target": "13",
+    "id": "3119",
+    "attributes": {
+      "prod": "공예품",
+      "class": "목재제작품"
+    },
+    "color": "rgb(255,93,133)",
+    "size": 1.0
+  }, {
+    "source": "9",
+    "target": "3",
+    "id": "3120",
+    "attributes": {
+      "prod": "베어링",
+      "class": "금속자재"
+    },
+    "color": "rgb(105,196,4)",
+    "size": 1.0
+  }, {
+    "source": "10",
+    "target": "18",
+    "id": "3129",
+    "attributes": {
+      "prod": "부품제작",
+      "class": "기계제작3"
+    },
+    "color": "rgb(226,139,255)",
+    "size": 1.0
+  }, {
+    "source": "11",
+    "target": "1",
+    "id": "3123",
+    "attributes": {
+      "prod": "간판",
+      "class": "간판및광고물"
+    },
+    "color": "rgb(0,199,255)",
+    "size": 1.0
+  }, {
+    "source": "6",
+    "target": "16",
+    "id": "3117",
+    "attributes": {},
+    "color": "rgb(250,146,0)",
+    "size": 1.0
+  }, {
+    "source": "5",
+    "target": "19",
+    "id": "3118",
+    "attributes": {
+      "prod": "목재제작품",
+      "class": "목재자재"
+    },
+    "color": "rgb(0,175,135)",
+    "size": 1.0
+  }, {
+    "source": "12",
+    "target": "18",
+    "id": "3127",
+    "attributes": {
+      "prod": "부품제작",
+      "class": "기계제작3"
+    },
+    "color": "rgb(226,139,255)",
+    "size": 1.0
+  }, {
+    "source": "10",
+    "target": "15",
+    "id": "3128",
+    "attributes": {
+      "prod": "장비제작",
+      "class": "기계제작3"
+    },
+    "color": "rgb(226,139,255)",
+    "size": 1.0
+  }, {
+    "source": "8",
+    "target": "4",
+    "id": "3124",
+    "attributes": {
+      "prod": "볼트,너트",
+      "class": "금속자재"
+    },
+    "color": "rgb(105,196,4)",
+    "size": 1.0
+  }]
+}

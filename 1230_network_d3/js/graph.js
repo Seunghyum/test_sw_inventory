@@ -759,7 +759,6 @@
       parent.document.querySelector('#content iframe').style.height = "calc(100vh - 10px)"
       parent.document.querySelector('body').style = "overflow: hidden";
     }
-    console.log("parent.document.querySelector('#content iframe') : ",parent.document.querySelector('#content iframe'))
     d3.queue()
       .defer(d3.csv, "./data/edge_1230.csv")
       .defer(d3.csv, "./data/node_1230.csv")
@@ -790,6 +789,7 @@
   
           function getNodeColor(node, neighbors) {
             if (Array.isArray(neighbors) && neighbors.indexOf(node.id) > -1) {
+              console.log('node : ', node)
               return node.level === 1 ? 'blue' : 'green'
             }
             return node.level === 1 ? 'red' : 'gray'
@@ -853,6 +853,18 @@
           var transform = d3.zoomIdentity.translate(0, 0).scale(defaultZoom);
           // var transform = d3.zoomIdentity.scale(defaultZoom);
           var zoom = d3.zoom().scaleExtent([maxZoom, minZoom]).on("zoom", handleZoom);
+
+          function handleZoom() {
+            if (linkGroup) {
+              linkGroup.attr("transform", d3.event.transform);
+            }
+            if (nodeGroup) {
+              nodeGroup.attr("transform", d3.event.transform);
+            }
+            if (textGroup) {
+              textGroup.attr("transform", d3.event.transform);
+            }
+          };
   
           var svg = d3.select('svg')
             .call(zoom) // Adds zoom functionality
@@ -863,7 +875,7 @@
           var linkElements,
             nodeElements,
             textElements
-  
+            
           // we use svg groups to logically group the elements together
           var linkGroup = svg.append('g').attr('class', 'links zoomable').attr("transform", transform);
           var nodeGroup = svg.append('g').attr('class', 'nodes zoomable').attr("transform", transform);
@@ -927,11 +939,11 @@
           //    .stop();
           let globalScreenX = 0
           let globalScreenY = 0
-          var dragDrop = d3.drag().on('start', function (node) {
-            console.log('ndoe : ', node)
-            node.fx = node.x
-            node.fy = node.y
-          })
+          var dragDrop = d3.drag()
+            // .on('start', function (node) {
+            //   node.fx = node.x
+            //   node.fy = node.y
+            // })
           // .on("drag", function() {
 
           //   // d3.select(this)
@@ -940,13 +952,10 @@
           // })
           .on('drag', function (node) {
             // simulation.alphaTarget(0.3).restart()
-            console.log('===dragstart=== ')
-            console.log('d3.event.x : ', d3.event.x)
             node.fx = d3.event.x
             node.fy = d3.event.y
           })
           .on('end', function (node) {
-            console.log('===dragend=== ')
             if (!d3.event.active) {
               simulation.alphaTarget(0)
             }
@@ -1112,8 +1121,6 @@
                 processArray.push(row)
               }
             })
-            console.log("materialArray : ", materialArray)
-            console.log("processArray : ", processArray)
           }
           
           // select node is called on every click
@@ -1121,8 +1128,40 @@
           // or reset the data if the same node is clicked twice
           function findAndCentroidNodeElement (selectedNode) {
             const bbox = d3.select(`#text-${selectedNode.id}`).node().getBBox()
+            console.log('bbox : ', bbox)
             centerNode(bbox, defaultZoom)
           }
+
+          function findAndCentroidNodeElementInArray (arrayNodes) {
+            if(arrayNodes.length === 0) return
+            if(arrayNodes.length === 1)findAndCentroidNodeElement (arrayNodes[0])
+            else {
+              const maxX = Math.max.apply(Math, arrayNodes.map(function(o) { return o.x; }))
+              const minX = Math.min.apply(Math, arrayNodes.map(function(o) { return o.x; }))
+              const maxY = Math.max.apply(Math, arrayNodes.map(function(o) { return o.y; }))
+              const minY = Math.min.apply(Math, arrayNodes.map(function(o) { return o.y; }))
+              // const arrayBbox = arrayNodes.map(node => d3.select(`#text-${node.id}`).node().getBBox())
+              const gapX = maxX-minX
+              const gapY = maxY-minY
+              let targetBbox = {
+                x: maxX - (gapX)/2,
+                y: maxY - (gapY)/2,
+                width: 20,
+                height: 20,
+              }
+              const bigGap = gapY > gapX ? gapY : gapX
+              console.log('------bigGap : ', bigGap)
+              const targetZoom = 1000/(gapX*2)
+              console.log('------targetZoom : ', targetZoom)
+              // targetBbox.x = Math.max.apply(Math, arrayBbox.map(function(o) { return o.x; }))
+              // targetBbox.y = Math.max.apply(Math, arrayBbox.map(function(o) { return o.y; }))
+              // targetBbox.width = Math.max.apply(Math, arrayBbox.map(function(o) { return o.width; }))
+              // targetBbox.x = Math.max.apply(Math, arrayBbox.map(function(o) { return o.x; }))
+              centerNode(targetBbox, targetZoom)
+            }
+            
+          }
+          
           function selectNode(selectedNode, e) {
             // centerNode(this.getBBox(), 0.6)
             if(typeof(e) === 'object') e.preventDefault()
@@ -1134,12 +1173,11 @@
               resetGraph()
             } else {
               $("#attributepane").show();
-              console.log('selectedNode : ', selectedNode)
               if(selectedNode.node_type === "상점") {
-                document.querySelector('#attributepane #detail-info').classList.remove('hidden')
-                document.querySelector('#attributepane #detail-info #data').classList.remove('hidden')
+                // document.querySelector('#attributepane #detail-info').classList.remove('hidden')
+                // document.querySelector('#attributepane #detail-info #data').classList.remove('hidden')
               } else {
-                document.querySelector('#attributepane #detail-info #data').classList.add('hidden')
+                // document.querySelector('#attributepane #detail-info #data').classList.add('hidden')
               }
               selectedId = selectedNode.id
               // updateData(selectedNode)
@@ -1159,30 +1197,30 @@
             }
 
             if (selectedNode.node_type == '상점') {
-              const targetStore = storeDB.find(data => data.name === selectedNode.label)
-              const linkToStoreDetailPage = targetStore ? '<a class="nm-btn view-detail" target="_blank" href="' + defaultHref + targetStore.id + '">상품 상세정보 보기</a>' : ''
+              // const targetStore = storeDB.find(data => data.name === selectedNode.label)
+              // const linkToStoreDetailPage = targetStore ? '<a class="nm-btn view-detail" target="_blank" href="' + defaultHref + targetStore.id + '">상품 상세정보 보기</a>' : ''
               
-              document.getElementById('name').innerHTML = '<strong>업체명 </strong>' + selectedNode.label;
-              // console.log("document.getElementById('name') : ", document.getElementById('name'))
-              document.getElementById('data').innerHTML = 
-                '<strong>주소</strong> 서울시 ' + selectedNode.dist + ' ' + selectedNode.address +
-                ' <br> <strong>전화번호 </strong> 02-' + selectedNode.phone +
-                ' <br><br><strong>취급 품목, 공정</strong><br>' + selectedNode.descriptions +
-                '<br>' +
-                linkToStoreDetailPage;
-                document.querySelector('#attributepane #store-wrapper').classList.add('hidden')
-                // document.querySelector('#attributepane #material-wrapper').classList.remove('hidden')
-                // document.querySelector('#attributepane #process-wrapper').classList.remove('hidden')
+              // // document.getElementById('name').innerHTML = '<strong>업체명 </strong>' + selectedNode.label;
+              // // console.log("document.getElementById('name') : ", document.getElementById('name'))
+              // document.getElementById('data').innerHTML = 
+              //   '<strong>주소</strong> 서울시 ' + selectedNode.dist + ' ' + selectedNode.address +
+              //   ' <br> <strong>전화번호 </strong> 02-' + selectedNode.phone +
+              //   ' <br><br><strong>취급 품목, 공정</strong><br>' + selectedNode.descriptions +
+              //   '<br>' +
+              //   linkToStoreDetailPage;
+              document.querySelector('#attributepane #store-wrapper').classList.add('hidden')
+              document.querySelector('#attributepane #material-wrapper').classList.remove('hidden')
+              document.querySelector('#attributepane #process-wrapper').classList.remove('hidden')
             } else if (selectedNode.node_type == '공정') {
-              document.getElementById('name').innerHTML = '<strong>공정명 </strong>' + selectedNode.label;
+              // document.getElementById('name').innerHTML = '<strong>공정명 </strong>' + selectedNode.label;
               document.querySelector('#attributepane #store-wrapper').classList.remove('hidden')
-              // document.querySelector('#attributepane #material-wrapper').classList.add('hidden')
-              // document.querySelector('#attributepane #process-wrapper').classList.add('hidden')
+              document.querySelector('#attributepane #material-wrapper').classList.add('hidden')
+              document.querySelector('#attributepane #process-wrapper').classList.add('hidden')
             } else {
-              document.getElementById('name').innerHTML = '<strong>재료 및 품목 </strong>' + selectedNode.label;
+              // document.getElementById('name').innerHTML = '<strong>재료 및 품목 </strong>' + selectedNode.label;
               document.querySelector('#attributepane #store-wrapper').classList.remove('hidden')
-              // document.querySelector('#attributepane #material-wrapper').classList.add('hidden')
-              // document.querySelector('#attributepane #process-wrapper').classList.add('hidden')
+              document.querySelector('#attributepane #material-wrapper').classList.add('hidden')
+              document.querySelector('#attributepane #process-wrapper').classList.add('hidden')
             };
 
             let materialItems = [], processItems = [], storeItems = []
@@ -1199,8 +1237,8 @@
                 if(l.source.node_type === '상점') storeItems.push(l.source.label)
                 if(l.source.node_type === '공정') processItems.push(l.source.label)
               }
-              if(selectedNode.id === l.target.id) console.log('target l : ',  l)
-              if(selectedNode.id === l.source.id) console.log('source l : ',  l)
+              // if(selectedNode.id === l.target.id) console.log('target l : ',  l)
+              // if(selectedNode.id === l.source.id) console.log('source l : ',  l)
             })
             // console.log('relatedLinks : ', relatedLinks)
             
@@ -1218,11 +1256,10 @@
             //     materialItems.push(relatedNode.label)
             //   }
             // })
-            console.log('storeItems : ', storeItems)
-            console.log('materialItems : ', materialItems)
-            console.log('processItems : ', processItems)
-            // console.log('relatedNodes : ', relatedNodes)
-            // relatedNodes
+            // console.log('storeItems : ', storeItems)
+            // console.log('materialItems : ', materialItems)
+            // console.log('processItems : ', processItems)
+
             // const materialItems = selectedNode.products.split(",")
 
             const storeField = document.querySelector('#attributepane #store')
@@ -1241,6 +1278,8 @@
 
             const materialField = document.querySelector('#attributepane #material')
             materialField.innerHTML = ''
+            console.log('materialItems : ', materialItems)
+            if(materialItems.length === 0) materialField.innerHTML = '<span>결과가 없습니다.</span>'
             materialItems.forEach(m => {
               if(m === 'NA') return false
               let materialFieldItem = document.createElement("DIV")
@@ -1250,12 +1289,17 @@
                 selectMaterialGroupOfNode(m, linkElements, nodeElements)
               })
               materialFieldItem.innerHTML = `<span>${m}</span>`
+              console.log('materialFieldItem : ', materialFieldItem)
+              console.log('before materialField : ', materialField)
               materialField.append(materialFieldItem)
+              console.log('after materialField : ', materialField)
+              console.log('===========')
             })
 
             // const processItems = selectedNode.process.split(",")
             const processField = document.querySelector('#attributepane #process')
             processField.innerHTML = ''
+            if(processItems.length === 0) processField.innerHTML = '<span>결과가 없습니다.</span>'
             processItems.forEach(p => {
               if(p === 'NA') return false
               let processFieldItem = document.createElement("DIV")
@@ -1405,10 +1449,7 @@
   
   
           ////////////////////////////////////////////////////////////////
-          function centerNode(bbox, zoom=defaultZoom){
-            // console.log('xx : ', xx)
-            // console.log('yy : ', yy)
-            // console.log('linkGroup.node().getBBox : ', linkGroup.node().getBBox)
+          function centerNode(bbox, currentZoom=defaultZoom){
             const rootbbox = linkGroup.node().getBBox()
             const vx = rootbbox.x;		// container x co-ordinate
             const vy = rootbbox.y;		// container y co-ordinate
@@ -1418,40 +1459,27 @@
             const by = bbox.y;
             const bw = bbox.width;
             const bh = bbox.height;
-            const tx = -bx*zoom + vx + vw/2 - bw*zoom/2 + 200;
-            const ty = -by*zoom + vy + vh/2 - bh*zoom/2 + 150;
+            const tx = -bx*currentZoom + vx + vw/2 - bw*currentZoom/2 + 200;
+            const ty = -by*currentZoom + vy + vh/2 - bh*currentZoom/2 + 150;
             globalScreenX = tx
             globalScreenY = ty
-          
+            transform = d3.zoomIdentity.translate(tx, ty).scale(currentZoom);
+
+            svg.call(zoom.transform, transform); // Calls/inits handleZoom
+
             linkGroup
               .transition()
               .duration(500)
-              // .call(zoom.transform, d3.zoomIdentity.translate(x, y).scale(zoom))
-              .attr("transform", `translate(${tx},${ty}) scale(${zoom})`)
+              .attr("transform", `translate(${tx},${ty}) scale(${currentZoom})`)
             nodeGroup
               .transition()
               .duration(500)
-              // .call(zoom.transform, d3.zoomIdentity.translate(x, y).scale(zoom))
-              .attr("transform", `translate(${tx},${ty}) scale(${zoom})`)
+              .attr("transform", `translate(${tx},${ty}) scale(${currentZoom})`)
             textGroup 
               .transition()
               .duration(500)
-              // .call(zoom.transform, d3.zoomIdentity.translate(x, y).scale(zoom))
-              .attr("transform", `translate(${tx},${ty}) scale(${zoom})`)
-            // d3.transform(s.attr("transform")).translate[0]
+              .attr("transform", `translate(${tx},${ty}) scale(${currentZoom})`)
           }
-        
-          function handleZoom() {
-            if (linkGroup) {
-              linkGroup.attr("transform", d3.event.transform);
-            }
-            if (nodeGroup) {
-              nodeGroup.attr("transform", d3.event.transform);
-            }
-            if (textGroup) {
-              textGroup.attr("transform", d3.event.transform);
-            }
-          };
   
           function updateSimulation() {
             updateGraph()
@@ -1495,7 +1523,19 @@
           updateSimulation()
 
           function onChangeSearchText(val) {
-            document.getElementById('search-status').innerHTML = `<div class="title">검색어 : ${val} <div>`
+            resetData()
+            updateSimulation()
+            resetGraph()
+
+            // document.querySelector('#attributepane #name').innerHTML=""
+            // document.querySelector('#attributepane #data').innerHTML=""
+            // // document.querySelector('#attributepane #p').innerHTML=""
+            // document.querySelector('#attributepane #link').innerHTML=""
+            $("#attributepane").hide();
+            // document.getElementById('autocomplete-list').classList.add("hidden");
+            document.getElementById('filter-list').classList.add("hidden");
+            // $("#attributepane-left").show();
+            // document.getElementById('search-status').innerHTML = `<div class="title">검색어 : ${val} <div>`
           }
 
           // search auto complete - 검색 자동완성
@@ -1548,13 +1588,14 @@
                   nameFieldElement.addEventListener("click", function (e) {
                     /*insert the value for the autocomplete text field:*/
                     document.getElementById('autocomplete-list').classList.add("hidden");
+                    console.log('keywords[i] : ', keywords[i])
                     selectNode(keywords[i],e)
                     findAndCentroidNodeElement(keywords[i])
                     // inp.value = this.getElementsByTagName("input")[0].value;
                     
                     /*close the list of autocompleted values,
                     (or any other open lists of autocompleted values:*/
-                    closeAllLists();
+                    // closeAllLists();
                   });
   
                   // descriptionFieldElement.innerHTML = "<span>" + nodes[i].descriptions + "</span>"
@@ -1623,7 +1664,7 @@
 
             function searchInputText(val) {
               $("#attributepane").show();
-              document.querySelector('#attributepane #store-wrapper').classList.remove('hidden')
+              document.querySelector('#attributepane #store-wrapper').classList.add('hidden')
               document.getElementById('autocomplete-list').classList.add("hidden");
 
               const attributepaneMaterial = document.querySelector('#attributepane #material')
@@ -1648,15 +1689,16 @@
                     })
                     materialFieldItem.innerHTML = "<span>" + nodes[i].label + "</span>"
                     attributepaneMaterial.append(materialFieldItem)
-                  } else { // 상점
-                    let storeFieldItem = document.createElement("DIV")
-                    storeFieldItem.setAttribute("class", "attributepane-item")
-                    storeFieldItem.addEventListener('click',(e) => {
-                      selectNode(nodes[i],e)
-                    })
-                    storeFieldItem.innerHTML = "<span>" + nodes[i].label + "</span>"
-                    attributepaneStore.append(storeFieldItem)
-                  }
+                  } 
+                  // else { // 상점
+                  //   let storeFieldItem = document.createElement("DIV")
+                  //   storeFieldItem.setAttribute("class", "attributepane-item")
+                  //   storeFieldItem.addEventListener('click',(e) => {
+                  //     selectNode(nodes[i],e)
+                  //   })
+                  //   storeFieldItem.innerHTML = "<span>" + nodes[i].label + "</span>"
+                  //   attributepaneStore.append(storeFieldItem)
+                  // }
                 }
               }
 
@@ -1665,38 +1707,40 @@
 
 
 
-              const processChekced = document.querySelectorAll('.field.process .filter-item-check-input:checked')
-              const processField = document.querySelector('#attributepane #process')
-              processField.innerHTML = ''
-              processChekced.forEach((input) => {
-                const nodeGroup = nodes.filter(n => n.label === input.value)
-                nodeGroup.forEach(p => {
-                  let processFieldItem = document.createElement("DIV")
-                  processFieldItem.setAttribute("class","attributepane-item")
-                  processFieldItem.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    selectProcessGroupOfNode(p, linkElements, nodeElements)
-                  })
-                  processFieldItem.innerHTML = `<span>${p.name}</span>`
-                  processField.append(processFieldItem)
-                })
-              })
+              // const processChekced = document.querySelectorAll('.field.process .filter-item-check-input:checked')
+              // const processField = document.querySelector('#attributepane #process')
+              // processField.innerHTML = ''
+              // // if(processChekced.length === 0) processField.innerHTML = '<span>결과가 없습니다.</span>'
+              // processChekced.forEach((input) => {
+              //   const nodeGroup = nodes.filter(n => n.label === input.value)
+              //   nodeGroup.forEach(p => {
+              //     let processFieldItem = document.createElement("DIV")
+              //     processFieldItem.setAttribute("class","attributepane-item")
+              //     processFieldItem.addEventListener('click', (e) => {
+              //       e.preventDefault();
+              //       selectProcessGroupOfNode(p, linkElements, nodeElements)
+              //     })
+              //     processFieldItem.innerHTML = `<span>${p.name}</span>`
+              //     processField.append(processFieldItem)
+              //   })
+              // })
 
-              const materialChekced = document.querySelectorAll('.field.material .filter-item-check-input:checked')
-              const materialField = document.querySelector('#attributepane #material')
-              materialChekced.forEach((input) => {
-                const nodeGroup = nodes.filter(n => n.label === input.value)
-                nodeGroup.forEach(m => {
-                  let materialFieldItem = document.createElement("DIV")
-                  materialFieldItem.setAttribute("class","attributepane-item")
-                  materialFieldItem.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    selectMaterialGroupOfNode(m, linkElements, nodeElements)
-                  })
-                  materialFieldItem.innerHTML = `<span>${m}</span>`
-                  materialField.append(materialFieldItem)
-                })
-              })
+              // const materialChekced = document.querySelectorAll('.field.material .filter-item-check-input:checked')
+              // const materialField = document.querySelector('#attributepane #material')
+              // // if(materialChekced.length === 0) materialField.innerHTML = '<span>결과가 없습니다.</span>'
+              // materialChekced.forEach((input) => {
+              //   const nodeGroup = nodes.filter(n => n.label === input.value)
+              //   nodeGroup.forEach(m => {
+              //     let materialFieldItem = document.createElement("DIV")
+              //     materialFieldItem.setAttribute("class","attributepane-item")
+              //     materialFieldItem.addEventListener('click', (e) => {
+              //       e.preventDefault();
+              //       selectMaterialGroupOfNode(m, linkElements, nodeElements)
+              //     })
+              //     materialFieldItem.innerHTML = `<span>${m}</span>`
+              //     materialField.append(materialFieldItem)
+              //   })
+              // })
             }
 
             // user press enter key on search button 검색 버튼 클릭시 필터링
@@ -1728,6 +1772,7 @@
                 /*If the ENTER key is pressed, prevent the form from being submitted,*/
                 e.preventDefault();
                 if (currentFocus > -1) {
+                  console.log('x[currentFocus] : ', x[currentFocus])
                   /*and simulate a click on the "active" item:*/
                   if (x) x[currentFocus].click();
                 }
@@ -1792,10 +1837,10 @@
             updateSimulation()
             resetGraph()
 
-            document.querySelector('#attributepane #name').innerHTML=""
-            document.querySelector('#attributepane #data').innerHTML=""
-            // document.querySelector('#attributepane #p').innerHTML=""
-            document.querySelector('#attributepane #link').innerHTML=""
+            // document.querySelector('#attributepane #name').innerHTML=""
+            // document.querySelector('#attributepane #data').innerHTML=""
+            // // document.querySelector('#attributepane #p').innerHTML=""
+            // document.querySelector('#attributepane #link').innerHTML=""
             $("#attributepane").hide();
             document.getElementById('autocomplete-list').classList.add("hidden");
             document.getElementById('filter-list').classList.add("hidden");
@@ -1845,33 +1890,58 @@
           );
 
           document.getElementById('toggle-filter1').addEventListener('click', (e) => {
+            e.preventDefault();
             document.getElementById('filter-list').classList.toggle("hidden")
             document.querySelector('#toggle-filter1 i').classList.toggle("rotate-180")
+            document.querySelector('#toggle-filter2 i').classList.toggle("rotate-180")
+            resetData()
+            updateSimulation()
+            resetGraph()
+            $("#attributepane").hide();
+            document.getElementById('autocomplete-list').classList.add("hidden");
           })
           document.getElementById('toggle-filter2').addEventListener('click', (e) => {
+            e.preventDefault();
             document.getElementById('filter-list').classList.toggle("hidden")
+            document.querySelector('#toggle-filter1 i').classList.toggle("rotate-180")
             document.querySelector('#toggle-filter2 i').classList.toggle("rotate-180")
+            resetData()
+            updateSimulation()
+            resetGraph()
+            $("#attributepane").hide();
+            document.getElementById('autocomplete-list').classList.add("hidden");
           })
 
           // 필터링 버튼
           document.getElementById('filtering').addEventListener('click', (e) => {
+            console.log('========')
             e.preventDefault()
-            
-            $("#attributepane").show();
             document.querySelector('#attributepane #store-wrapper').classList.add('hidden')
-            document.querySelector('#attributepane #detail-info').classList.add('hidden')
+            // document.querySelector('#attributepane #detail-info').classList.add('hidden')
             document.getElementById('filter-list').classList.add("hidden");
             
             let allNeighborsIds = []
 
             const processChekced = document.querySelectorAll('.field.process .filter-item-check-input:checked')
+            const materialChekced = document.querySelectorAll('.field.material .filter-item-check-input:checked')
             const processField = document.querySelector('#attributepane #process')
+            const materialField = document.querySelector('#attributepane #material')
             processField.innerHTML = ''
+            
+            if(processChekced.length === 0 && materialChekced.length === 0) {
+              resetData()
+              updateSimulation()
+              return resetGraph()
+            }
+
+            $("#attributepane").show();
+            
+            if(processChekced.length === 0) processField.innerHTML = '<span>결과가 없습니다.</span>'
             processChekced.forEach((input) => {
               // const processFieldItems = nodes.filter(n => n.process.includes(input.value))
               const processFieldItems = nodes.filter(n => n.label === input.value)
               allNeighborsIds.push(processFieldItems.map(g => g.id))
-
+              
               processFieldItems.forEach(p => {
                 if(p === 'NA') return false
                 let processFieldItem = document.createElement("DIV")
@@ -1885,14 +1955,13 @@
               })
             })
 
-            const materialChekced = document.querySelectorAll('.field.material .filter-item-check-input:checked')
-            const materialField = document.querySelector('#attributepane #material')
             materialField.innerHTML = ''
+            if(materialChekced.length === 0) materialField.innerHTML = '<span>결과가 없습니다.</span>'
             materialChekced.forEach((input) => {
               // const materialItems = nodes.filter(n => n.products.includes(input.value))
               const materialItems = nodes.filter(n => n.label === input.value)
               allNeighborsIds.push(materialItems.map(g => g.id))
-
+              console.log('allNeighborsIds : ', allNeighborsIds)
               materialItems.forEach(m => {
                 if(m === 'NA') return false
                 let materialFieldItem = document.createElement("DIV")
@@ -1907,13 +1976,27 @@
             })
             
             allNeighborsIds = allNeighborsIds.flat()
+
+            console.log("allNeighborsIds : ", allNeighborsIds)
             linkElements.attr('stroke', function (link) {
               return allNeighborsIds.some(id => id === link.target.id || id === link.source.id) ? color(link.class) : '#E5E5E5'
             })
   
             nodeElements.attr('fill', function (node) {
+              if (allNeighborsIds.indexOf(node.id) > -1) {
+                findAndCentroidNodeElement (node)
+              }
               return getNodeColor(node, allNeighborsIds)
             })
+            console.log('nodeElements : ', nodeElements)
+            const selectedArrayNodes = nodes.filter(e => allNeighborsIds.includes(e.id))
+            console.log('selectedArrayNodes : ', selectedArrayNodes)
+            findAndCentroidNodeElementInArray(selectedArrayNodes)
+
+
+            
+
+            // const bbox = d3.select(`#text-${selectedNode.id}`).node().getBBox()
           })
 
           // 선택 취소 - 취급 품목
@@ -1996,6 +2079,7 @@
               allNeighborsObj.push(node)
             })
             const node = group[0]
+            
             if(node) {
               // const bbox = d3.select(`#text-${node.id}`).node().getBBox()
               // centerNode(bbox, 0.6)
@@ -2026,8 +2110,8 @@
               allNeighborsObj.push(node)
             })
             const node = group[0]
-            console.log("group : ", group)
-            console.log("node : ", node)
+            console.log('selectProcessGroupOfNode group : ', group)
+            console.log('selectProcessGroupOfNode node : ', node)
             if(node) {
               // const bbox = d3.select(`#text-${node.id}`).node().getBBox()
               // centerNode(bbox, 0.6)
